@@ -1,0 +1,67 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffeb3b;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+h1, h2, label, p {
+    color: #333;
+}
+
+#authSection, #appSection {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #2d6a4f;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #40916c;
+}
+
+.content-section {
+    display: none;
+}
+
+#bottomNav {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    background-color: #2d6a4f;
+    color: #fff;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 0 0 10px 10px;
+}
+
+#bottomNav button {
+    background: none;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.dark-mode {
+    background-color: #333;
+    color: #ffeb3b;
+}
