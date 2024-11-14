@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click n' Go! - Transportation & Delivery Service</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="authSection">
+        <h1>Welcome to Click n' Go!</h1>
+        <div id="signUpForm">
+            <h2>Sign Up</h2>
+            <form onsubmit="signUp(event)">
+                <label for="signUpEmail">Email:</label>
+                <input type="email" id="signUpEmail" required>
+                <label for="signUpPassword">Password:</label>
+                <input type="password" id="signUpPassword" required>
+                
+                <!-- Role Selection -->
+                <label for="role">Choose Role:</label>
+                <select id="role" required>
+                    <option value="user">User</option>
+                    <option value="rider">Delivery Rider</option>
+                </select>
+
+                <button type="submit">Sign Up</button>
+            </form>
+            <p>Already have an account? <a href="#" onclick="toggleAuth()">Login</a></p>
+        </div>
+
+        <div id="loginForm" style="display: none;">
+            <h2>Login</h2>
+            <form onsubmit="login(event)">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" required>
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" required>
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="#" onclick="toggleAuth()">Sign Up</a></p>
+        </div>
+    </div>
+
+    <div id="appSection" style="display: none;">
+        <!-- Header Section -->
+        <header>
+            <h1>Click n' Go!</h1>
+            <p>Your Reliable Transportation and Delivery Service</p>
+        </header>
+
+        <!-- Home Section -->
+        <section id="homeSection" class="content-section">
+            <h2>Welcome, <span id="userRole">User</span>!</h2>
+            <p>Select items to add to your order or explore other sections below.</p>
+        </section>
+
+        <!-- Order Items Section -->
+        <section id="orderItemsSection" class="content-section" style="display: none;">
+            <h2>Select Items</h2>
+            <div id="itemList">
+                <button onclick="addItem('Item 1')">Item 1</button>
+                <button onclick="addItem('Item 2')">Item 2</button>
+                <button onclick="addItem('Item 3')">Item 3</button>
+                <!-- Add more items as needed -->
+            </div>
+            <p id="selectedItems">Selected Items: None</p>
+        </section>
+
+        <!-- Track Order Section -->
+        <section id="trackOrderSection" class="content-section" style="display: none;">
+            <h2>Track Your Order</h2>
+            <button onclick="trackOrder()">Start Tracking</button>
+            <p id="trackingStatus">No active order</p>
+        </section>
+
+        <!-- Account Section -->
+        <section id="accountSection" class="content-section" style="display: none;">
+            <h2>My Account</h2>
+            <p>Email: <span id="userEmail">user@example.com</span></p>
+            <button onclick="logout()">Logout</button>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settingsSection" class="content-section" style="display: none;">
+            <h2>Settings</h2>
+            <label>
+                <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()"> Dark Mode
+            </label>
+            <button onclick="deleteAccount()">Delete Account</button>
+        </section>
+
+        <!-- Navigation Bar -->
+        <nav id="bottomNav">
+            <button onclick="switchSection('home')">Home</button>
+            <button onclick="switchSection('orderItems')">Order Items</button>
+            <button onclick="switchSection('trackOrder')">Track Order</button>
+            <button onclick="switchSection('account')">Account</button>
+            <button onclick="switchSection('settings')">Settings</button>
+        </nav>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
