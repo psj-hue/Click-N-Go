@@ -1,51 +1,110 @@
+/* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #ffeb3b;
-    color: #333;
+    font-family: 'Roboto', sans-serif;
+    background-color: #ffd700; /* Yellow background */
+    color: #000000; /* Black font */
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    flex-direction: column;
 }
 
 h1, h2, label, p {
-    color: #333;
+    color: #000000; /* Black font */
 }
 
-#authSection, #appSection {
+/* Auth Section */
+#authSection {
     width: 100%;
-    max-width: 500px;
+    max-width: 450px;
     padding: 20px;
-    background-color: #fff;
+    background-color: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+input[type="email"], input[type="password"], select {
+    background-color: #f9f9f9;
 }
 
 button {
-    width: 100%;
-    padding: 10px;
-    background-color: #2d6a4f;
-    color: #fff;
+    background-color: #2d6a4f; /* Green buttons */
+    color: white;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
-    margin-top: 10px;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
     background-color: #40916c;
 }
 
+/* Google Sign-In Button */
+#googleSignIn {
+    background-color: #4285F4;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    width: 100%;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+#googleSignIn:hover {
+    background-color: #357ae8;
+}
+
+/* App Section */
+#appSection {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
 .content-section {
     display: none;
+}
+
+button {
+    background-color: #2d6a4f;
+    color: white;
+    font-size: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
 }
 
 #bottomNav {
     display: flex;
     justify-content: space-around;
-    padding: 10px 0;
+    padding: 10px;
     background-color: #2d6a4f;
-    color: #fff;
+    color: white;
     position: fixed;
     bottom: 0;
     width: 100%;
@@ -55,7 +114,7 @@ button:hover {
 
 #bottomNav button {
     background: none;
-    color: #fff;
+    color: white;
     border: none;
     cursor: pointer;
     padding: 10px;
