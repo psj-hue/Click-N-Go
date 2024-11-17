@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Load the Google API library -->
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="697356789668-4s3ovf39lbufpq56cfpee6gtqi2on8tm.apps.googleusercontent.com">
 </head>
 <body>
     <div id="authSection">
         <h1>Welcome to Click n' Go!</h1>
+        
+        <!-- Google Login Button -->
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        
         <div id="signUpForm">
             <h2>Sign Up</h2>
             <form onsubmit="signUp(event)">
@@ -100,6 +107,62 @@
         </nav>
     </div>
 
+    <!-- Add the Google Sign-In initialization script -->
+    <script>
+        function onSignIn(googleUser) {
+            var profile = googleUser.getBasicProfile();
+            console.log('ID: ' + profile.getId());
+            console.log('Name: ' + profile.getName());
+            console.log('Image URL: ' + profile.getImageUrl());
+            console.log('Email: ' + profile.getEmail());
+            // Handle sign-in and redirect to the main app section
+        }
+    </script>
+    
+    <!-- Firebase Configuration -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.6/firebase-auth.js"></script>
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDB5HOMSqUgpO9Dy3GhI9-vhemmr9sATmg",
+            authDomain: "click-n--go.firebaseapp.com",
+            projectId: "click-n--go",
+            storageBucket: "click-n--go.firebasestorage.app",
+            messagingSenderId: "697356789668",
+            appId: "1:697356789668:web:33eab0fc45e56274ef8331",
+            measurementId: "G-G95S72XP35"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Initialize the FirebaseUI Widget using Firebase.
+        const ui = new firebaseui.auth.AuthUI(firebase.auth());
+        const uiConfig = {
+            signInSuccessUrl: window.location.origin,
+            signInOptions: [
+                firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+            ],
+        };
+        // The start method will wait until the DOM is loaded.
+        ui.start('#googleSignInBtn', uiConfig);
+
+        // Listen to the sign-in state.
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in.
+                console.log('User signed in:', user);
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('appSection').style.display = 'block';
+                document.getElementById('userEmail').innerText = user.email;
+            } else {
+                // No user is signed in.
+                console.log('No user signed in');
+            }
+        });
+    </script>
+    
     <script src="script.js"></script>
 </body>
 </html>
