@@ -5,16 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Load the Google API library -->
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <meta name="google-signin-client_id" content="697356789668-4s3ovf39lbufpq56cfpee6gtqi2on8tm.apps.googleusercontent.com">
+    <style>
+        /* Bottom Navigation Bar Fix */
+        #bottomNav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #333;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            color: white;
+        }
+
+        #bottomNav button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #bottomNav button:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div id="authSection">
         <h1>Welcome to Click n' Go!</h1>
-        
-        <!-- Google Login Button -->
-        <div class="g-signin2" data-onsuccess="onSignIn"></div>
         
         <div id="signUpForm">
             <h2>Sign Up</h2>
@@ -23,6 +43,12 @@
                 <input type="email" id="signUpEmail" required>
                 <label for="signUpPassword">Password:</label>
                 <input type="password" id="signUpPassword" required>
+                
+                <label for="signUpLocation">Location:</label>
+                <input type="text" id="signUpLocation" placeholder="Enter your location" required>
+
+                <label for="signUpPhone">Phone Number:</label>
+                <input type="tel" id="signUpPhone" placeholder="Enter your phone number" required>
                 
                 <!-- Role Selection -->
                 <label for="role">Choose Role:</label>
@@ -66,10 +92,9 @@
         <section id="orderItemsSection" class="content-section" style="display: none;">
             <h2>Select Items</h2>
             <div id="itemList">
-                <button onclick="addItem('Item 1')">Item 1</button>
-                <button onclick="addItem('Item 2')">Item 2</button>
-                <button onclick="addItem('Item 3')">Item 3</button>
-                <!-- Add more items as needed -->
+                <button onclick="addItem('Burger')">Burger</button>
+                <button onclick="addItem('Milk Tea')">Milk Tea</button>
+                <button onclick="addItem('Fried Rice')">Fried Rice</button>
             </div>
             <p id="selectedItems">Selected Items: None</p>
         </section>
@@ -85,6 +110,8 @@
         <section id="accountSection" class="content-section" style="display: none;">
             <h2>My Account</h2>
             <p>Email: <span id="userEmail">user@example.com</span></p>
+            <p>Location: <span id="userLocation">N/A</span></p>
+            <p>Phone Number: <span id="userPhone">N/A</span></p>
             <button onclick="logout()">Logout</button>
         </section>
 
@@ -97,6 +124,15 @@
             <button onclick="deleteAccount()">Delete Account</button>
         </section>
 
+        <!-- Contact Section -->
+        <section id="contactSection" class="content-section" style="display: none;">
+            <h2>Contact Us</h2>
+            <p>Feel free to reach out to us through the details below:</p>
+            <p><strong>Phone:</strong> +63 123 456 7890</p>
+            <p><strong>Email:</strong> support@clickngo.com</p>
+            <p><strong>Address:</strong> 123 Click n' Go St., Marinduque, Philippines</p>
+        </section>
+
         <!-- Navigation Bar -->
         <nav id="bottomNav">
             <button onclick="switchSection('home')">Home</button>
@@ -104,65 +140,71 @@
             <button onclick="switchSection('trackOrder')">Track Order</button>
             <button onclick="switchSection('account')">Account</button>
             <button onclick="switchSection('settings')">Settings</button>
+            <button onclick="switchSection('contact')">Contact</button>
         </nav>
     </div>
 
-    <!-- Add the Google Sign-In initialization script -->
     <script>
-        function onSignIn(googleUser) {
-            var profile = googleUser.getBasicProfile();
-            console.log('ID: ' + profile.getId());
-            console.log('Name: ' + profile.getName());
-            console.log('Image URL: ' + profile.getImageUrl());
-            console.log('Email: ' + profile.getEmail());
-            // Handle sign-in and redirect to the main app section
+        let currentUser = {};
+
+        function signUp(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('signUpEmail').value;
+            const location = document.getElementById('signUpLocation').value;
+            const phone = document.getElementById('signUpPhone').value;
+
+            currentUser = { email, location, phone };
+
+            document.getElementById('userEmail').innerText = email;
+            document.getElementById('userLocation').innerText = location;
+            document.getElementById('userPhone').innerText = phone;
+
+            alert('Sign Up Successful!');
+
+            toggleToApp();
+        }
+
+        function login(event) {
+            event.preventDefault();
+            alert('Login Successful!');
+            toggleToApp();
+        }
+
+        function logout() {
+            alert('You have logged out.');
+            toggleToAuth();
+        }
+
+        function toggleAuth() {
+            const signUpForm = document.getElementById('signUpForm');
+            const loginForm = document.getElementById('loginForm');
+
+            if (signUpForm.style.display === 'none') {
+                signUpForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            } else {
+                signUpForm.style.display = 'none';
+                loginForm.style.display = 'block';
+            }
+        }
+
+        function toggleToApp() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('appSection').style.display = 'block';
+        }
+
+        function toggleToAuth() {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('appSection').style.display = 'none';
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.content-section').forEach((sec) => {
+                sec.style.display = 'none';
+            });
+            document.getElementById(section + 'Section').style.display = 'block';
         }
     </script>
-    
-    <!-- Firebase Configuration -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.6/firebase-auth.js"></script>
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDB5HOMSqUgpO9Dy3GhI9-vhemmr9sATmg",
-            authDomain: "click-n--go.firebaseapp.com",
-            projectId: "click-n--go",
-            storageBucket: "click-n--go.firebasestorage.app",
-            messagingSenderId: "697356789668",
-            appId: "1:697356789668:web:33eab0fc45e56274ef8331",
-            measurementId: "G-G95S72XP35"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        // Initialize the FirebaseUI Widget using Firebase.
-        const ui = new firebaseui.auth.AuthUI(firebase.auth());
-        const uiConfig = {
-            signInSuccessUrl: window.location.origin,
-            signInOptions: [
-                firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-            ],
-        };
-        // The start method will wait until the DOM is loaded.
-        ui.start('#googleSignInBtn', uiConfig);
-
-        // Listen to the sign-in state.
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in.
-                console.log('User signed in:', user);
-                document.getElementById('authSection').style.display = 'none';
-                document.getElementById('appSection').style.display = 'block';
-                document.getElementById('userEmail').innerText = user.email;
-            } else {
-                // No user is signed in.
-                console.log('No user signed in');
-            }
-        });
-    </script>
-    
-    <script src="script.js"></script>
 </body>
 </html>
