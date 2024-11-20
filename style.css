@@ -8,12 +8,27 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     flex-direction: column;
+    text-align: center;
 }
 
+/* Headers and Text */
 h1, h2, label, p {
     color: #000000; /* Black font */
+    margin: 10px 0;
+}
+
+/* Bolded Text for Key Information */
+h1, h2 {
+    font-weight: bold;
+}
+
+#contactSection h2,
+#trackingStatus,
+#userEmail,
+#userRole {
+    font-weight: bold;
 }
 
 /* Auth Section */
@@ -23,12 +38,13 @@ h1, h2, label, p {
     padding: 20px;
     background-color: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
 }
 
 form {
     margin-bottom: 20px;
+    text-align: left;
 }
 
 input, select, button {
@@ -38,9 +54,10 @@ input, select, button {
     border: 2px solid #ddd;
     border-radius: 5px;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
-input[type="email"], input[type="password"], select {
+input[type='email'], input[type='password'], input[type='text'], select {
     background-color: #f9f9f9;
 }
 
@@ -50,29 +67,12 @@ button {
     border: none;
     cursor: pointer;
     font-size: 18px;
+    font-weight: bold;
     transition: background-color 0.3s ease;
 }
 
 button:hover {
     background-color: #40916c;
-}
-
-/* Google Sign-In Button */
-#googleSignIn {
-    background-color: #4285F4;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    width: 100%;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
-}
-
-#googleSignIn:hover {
-    background-color: #357ae8;
 }
 
 /* App Section */
@@ -82,34 +82,51 @@ button:hover {
     padding: 20px;
     background-color: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Content Sections */
 .content-section {
     display: none;
+    margin-top: 20px;
 }
 
-button {
+/* Order Items Buttons */
+#orderItemsSection button {
+    margin: 5px 0;
     background-color: #2d6a4f;
     color: white;
-    font-size: 16px;
-    padding: 12px;
     border: none;
+    padding: 10px;
     border-radius: 5px;
-    margin-top: 10px;
+    cursor: pointer;
+    font-size: 16px;
 }
 
+#orderItemsSection button:hover {
+    background-color: #40916c;
+}
+
+#selectedItems {
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: bold; /* Bolded Selected Items Text */
+}
+
+/* Bottom Navigation Bar */
 #bottomNav {
     display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background-color: #2d6a4f;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #2d6a4f; /* Green */
     color: white;
     position: fixed;
-    bottom: 0;
-    width: 100%;
-    max-width: 500px;
-    border-radius: 0 0 10px 10px;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 #bottomNav button {
@@ -117,10 +134,65 @@ button {
     color: white;
     border: none;
     cursor: pointer;
+    font-size: 16px;
+    font-weight: bold; /* Bolded Buttons */
     padding: 10px;
+    transition: background-color 0.2s ease;
 }
 
+#bottomNav button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+}
+
+/* Contact Section */
+#contactSection {
+    text-align: left;
+    margin-top: 20px;
+}
+
+#contactSection p {
+    font-size: 16px;
+    font-weight: bold; /* Bolded Contact Information */
+}
+
+/* Track Order Status */
+#trackingStatus {
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: bold; /* Bolded Tracking Status */
+    color: #2d6a4f;
+}
+
+/* Dark Mode */
 .dark-mode {
     background-color: #333;
+    color: #ffeb3b; /* Yellow text */
+}
+
+.dark-mode #authSection, 
+.dark-mode #appSection {
+    background-color: #444;
     color: #ffeb3b;
+    box-shadow: 0 4px 10px rgba(255, 235, 59, 0.2);
+}
+
+.dark-mode button {
+    background-color: #555;
+    color: #ffeb3b;
+}
+
+.dark-mode button:hover {
+    background-color: #666;
+}
+
+.dark-mode input, .dark-mode select {
+    background-color: #555;
+    color: #ffeb3b;
+    border-color: #666;
+}
+
+.dark-mode #bottomNav {
+    background-color: #444;
+    box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
 }
