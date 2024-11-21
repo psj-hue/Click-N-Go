@@ -1,6 +1,4 @@
 let users = [];
-let currentUser = {};
-let generatedOtp = "";
 
 function toggleAuth() {
     document.getElementById("signUpForm").style.display =
@@ -23,49 +21,8 @@ function signUp(event) {
     }
 
     users.push({ email, password, role, location, phone });
-
-    // Save current user data for OTP page
-    currentUser = { email, password, role, location, phone };
-    generatedOtp = generateOtp();
-    alert(`Sign up successful! Please enter the OTP sent to your phone. (OTP: ${generatedOtp})`); // Simulating OTP
-    toggleToOtpVerification();
-}
-
-function toggleToOtpVerification() {
-    document.getElementById("authSection").style.display = "none";
-    document.getElementById("otpVerification").style.display = "block";
-}
-
-function generateOtp() {
-    return Math.floor(100000 + Math.random() * 900000); // Generates a random 6-digit OTP
-}
-
-function verifyOtp() {
-    const otpInput = document.getElementById("otpInput").value;
-
-    if (otpInput === generatedOtp) {
-        document.getElementById("otpVerification").style.display = "none";
-        document.getElementById("loadingPage").style.display = "block";
-
-        // Simulate loading for 3 seconds
-        setTimeout(() => {
-            document.getElementById("loadingPage").style.display = "none";
-            alert("OTP Verified Successfully!");
-            toggleToApp();
-        }, 3000);
-    } else {
-        alert("Invalid OTP. Please try again.");
-    }
-}
-
-function toggleToApp() {
-    document.getElementById("otpVerification").style.display = "none";
-    document.getElementById("appSection").style.display = "block";
-    document.getElementById("userEmail").textContent = currentUser.email;
-    document.getElementById("userRole").textContent =
-        currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
-    document.getElementById("userLocation").textContent = currentUser.location || "N/A";
-    document.getElementById("userPhone").textContent = currentUser.phone || "N/A";
+    alert("Sign up successful! Please log in.");
+    toggleAuth();
 }
 
 function login(event) {
@@ -75,27 +32,21 @@ function login(event) {
     const user = users.find((user) => user.email === email && user.password === password);
 
     if (user) {
-        alert("Login successful!");
-        currentUser = user; // Set current user for session
-        toggleToApp();
+        document.getElementById("authSection").style.display = "none";
+        document.getElementById("appSection").style.display = "block";
+        document.getElementById("userEmail").textContent = email;
+        document.getElementById("userRole").textContent =
+            user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        document.getElementById("userLocation").textContent = user.location || "N/A";
+        document.getElementById("userPhone").textContent = user.phone || "N/A";
     } else {
         alert("Invalid email or password.");
     }
 }
 
 function logout() {
-    currentUser = {};
     document.getElementById("authSection").style.display = "block";
     document.getElementById("appSection").style.display = "none";
-}
-
-function deleteAccount() {
-    if (confirm("Are you sure you want to delete your account?")) {
-        const email = currentUser.email;
-        users = users.filter((user) => user.email !== email);
-        logout();
-        alert("Account deleted.");
-    }
 }
 
 function switchSection(section) {
@@ -122,4 +73,13 @@ function trackOrder() {
 
 function toggleDarkMode() {
     document.body.classList.toggle("dark-mode");
+}
+
+function deleteAccount() {
+    if (confirm("Are you sure you want to delete your account?")) {
+        const email = document.getElementById("userEmail").textContent;
+        users = users.filter((user) => user.email !== email);
+        logout();
+        alert("Account deleted.");
+    }
 }
