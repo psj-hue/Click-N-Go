@@ -11,7 +11,7 @@
             font-family: Arial, sans-serif;
         }
 
-        #accountSection, #settingsSection, #contactSection, #developerSection {
+        #accountSection, #settingsSection, #contactSection, #developerSection, #orderDetailsSection {
             display: none;
         }
 
@@ -108,6 +108,7 @@
         <section id="homeSection" class="content-section">
             <h2>Welcome, <span id="userRole">User</span>!</h2>
             <p>Select items to add to your order or explore other sections below.</p>
+            <button onclick="alert('Ride Share Coming Soon!')">Ride Share (Coming Soon)</button>
         </section>
 
         <!-- Order Items Section -->
@@ -117,20 +118,34 @@
                 <div class="item-card">
                     <img src="https://via.placeholder.com/100" alt="Burger">
                     <p>Burger</p>
-                    <button onclick="addItem('Burger')">Add</button>
+                    <button onclick="selectItem('Burger')">Select</button>
                 </div>
                 <div class="item-card">
                     <img src="https://via.placeholder.com/100" alt="Milk Tea">
                     <p>Milk Tea</p>
-                    <button onclick="addItem('Milk Tea')">Add</button>
+                    <button onclick="selectItem('Milk Tea')">Select</button>
                 </div>
                 <div class="item-card">
                     <img src="https://via.placeholder.com/100" alt="Fried Rice">
                     <p>Fried Rice</p>
-                    <button onclick="addItem('Fried Rice')">Add</button>
+                    <button onclick="selectItem('Fried Rice')">Select</button>
                 </div>
             </div>
-            <p id="selectedItems">Selected Items: None</p>
+        </section>
+
+        <!-- Order Details Section -->
+        <section id="orderDetailsSection" class="content-section">
+            <h2>Order Details</h2>
+            <p>Item: <span id="selectedItem"></span></p>
+            <form onsubmit="submitOrder(event)">
+                <label for="orderFullName">Full Name:</label>
+                <input type="text" id="orderFullName" placeholder="Enter your full name" required>
+                <label for="orderPhoneNumber">Phone Number:</label>
+                <input type="tel" id="orderPhoneNumber" placeholder="Enter your phone number" required>
+                <label for="orderLocation">Location:</label>
+                <input type="text" id="orderLocation" placeholder="Enter your location" required>
+                <button type="submit">Submit Order</button>
+            </form>
         </section>
 
         <!-- Account Section -->
@@ -176,6 +191,7 @@
     <script>
         let currentUser = {};
         let generatedOTP = "";
+        let selectedOrderItem = "";
 
         function signUp(event) {
             event.preventDefault();
@@ -185,12 +201,10 @@
 
             currentUser = { email, location, phone };
 
-            // Redirect to OTP page
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('otpPage').style.display = 'block';
 
-            // Generate OTP
-            generatedOTP = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit OTP
+            generatedOTP = Math.floor(100000 + Math.random() * 900000);
             document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
 
             alert('Sign Up Successful! Please enter the OTP sent to your phone.');
@@ -201,15 +215,10 @@
             if (otpInput === generatedOTP.toString()) {
                 alert('OTP Verified Successfully!');
                 toggleToApp();
-                populateAccountInfo(); // Populate account info after successful login
+                populateAccountInfo();
             } else {
                 alert('Invalid OTP. Please try again.');
             }
-        }
-
-        function addItem(item) {
-            const selectedItems = document.getElementById('selectedItems');
-            selectedItems.innerText += selectedItems.innerText === "Selected Items: None" ? item : `, ${item}`;
         }
 
         function toggleAuth() {
@@ -261,6 +270,22 @@
             document.getElementById('authSection').style.display = 'block';
             document.getElementById('signUpForm').reset();
             document.getElementById('loginForm').reset();
+        }
+
+        function selectItem(item) {
+            selectedOrderItem = item;
+            document.getElementById('selectedItem').innerText = item;
+            switchSection('orderDetails');
+        }
+
+        function submitOrder(event) {
+            event.preventDefault();
+            const fullName = document.getElementById('orderFullName').value;
+            const phoneNumber = document.getElementById('orderPhoneNumber').value;
+            const location = document.getElementById('orderLocation').value;
+
+            alert(`Order placed successfully!\nItem: ${selectedOrderItem}\nName: ${fullName}\nPhone: ${phoneNumber}\nLocation: ${location}`);
+            switchSection('home');
         }
     </script>
 </body>
