@@ -1,51 +1,47 @@
 let currentUser = {};
 let generatedOTP = "";
+let selectedOrderItem = "";
 
+// Handles user sign-up
 function signUp(event) {
     event.preventDefault();
 
-    // Get values from the sign-up form
-    const email = document.getElementById('signUpEmail').value;
-    const location = document.getElementById('signUpLocation').value;
-    const phone = formatPhoneNumber(document.getElementById('signUpPhone').value);
+    const email = document.getElementById('signUpEmail').value.trim();
+    const location = document.getElementById('signUpLocation').value.trim();
+    const phone = document.getElementById('signUpPhone').value.trim();
 
-    // Store the user information
+    // Save user information
     currentUser = { email, location, phone };
 
-    // Redirect to OTP page
+    // Redirect to OTP verification
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('otpPage').style.display = 'block';
 
-    // Generate OTP (Random 6-digit number)
-    generatedOTP = Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit OTP
+    // Generate and display OTP
+    generatedOTP = generateOTP();
     document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
 
     alert('Sign Up Successful! Please enter the OTP sent to your phone.');
 }
 
+// Verifies the OTP entered by the user
 function verifyOTP() {
     const otpInput = document.getElementById('otpInput').value.trim();
 
     if (otpInput === generatedOTP.toString()) {
         alert('OTP Verified Successfully!');
         toggleToApp();
+        populateAccountInfo();
     } else {
         alert('Invalid OTP. Please try again.');
     }
 }
 
-function addItem(item) {
-    const selectedItems = document.getElementById('selectedItems');
-    selectedItems.innerText = selectedItems.innerText === "Selected Items: None" 
-        ? `Selected Items: ${item}` 
-        : `${selectedItems.innerText}, ${item}`;
-}
-
+// Toggles between Sign Up and Login forms
 function toggleAuth() {
     const signUpForm = document.getElementById('signUpForm');
     const loginForm = document.getElementById('loginForm');
 
-    // Toggle between sign up and login forms
     if (signUpForm.style.display === 'none') {
         signUpForm.style.display = 'block';
         loginForm.style.display = 'none';
@@ -55,53 +51,44 @@ function toggleAuth() {
     }
 }
 
-function toggleToApp() {
-    // Hide the OTP page and show the app page
-    document.getElementById('otpPage').style.display = 'none';
-    document.getElementById('appSection').style.display = 'block';
-
-    // Populate account information (if applicable)
-    populateAccountInfo();
-}
-
-function switchSection(section) {
-    // Hide all content sections
-    document.querySelectorAll('.content-section').forEach((sec) => {
-        sec.style.display = 'none';
-    });
-
-    // Show the selected section
-    document.getElementById(section + 'Section').style.display = 'block';
-}
-
+// Logs in the user
 function login(event) {
     event.preventDefault();
 
-    // Simulate login
     alert('Login Successful!');
     toggleToApp();
+    populateAccountInfo();
 }
 
+// Switches to the main app section
+function toggleToApp() {
+    document.getElementById('otpPage').style.display = 'none';
+    document.getElementById('appSection').style.display = 'block';
+}
+
+// Populates account information
+function populateAccountInfo() {
+    document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
+    document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
+    document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
+}
+
+// Logs out the user
 function logout() {
-    alert('You have logged out.');
-    toggleToAuth();
+    alert("Logged out successfully!");
+    resetApp();
 }
 
+// Deletes the user's account
 function deleteAccount() {
     if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-        alert('Account deleted successfully!');
+        alert("Account deleted successfully!");
         resetApp();
     }
 }
 
-function toggleToAuth() {
-    // Switch to the authentication section (Sign Up/Login page)
-    document.getElementById('authSection').style.display = 'block';
-    document.getElementById('appSection').style.display = 'none';
-}
-
+// Resets the app to its initial state
 function resetApp() {
-    // Reset all application states and forms
     currentUser = {};
     generatedOTP = "";
 
@@ -109,32 +96,41 @@ function resetApp() {
     document.getElementById('loginForm').reset();
     document.getElementById('otpInput').value = "";
 
-    // Reset UI
     document.getElementById('authSection').style.display = 'block';
     document.getElementById('otpPage').style.display = 'none';
     document.getElementById('appSection').style.display = 'none';
 
-    // Clear any selected items
     document.getElementById('selectedItems').innerText = "Selected Items: None";
 }
 
-function populateAccountInfo() {
-    // Display user account details in the Account Section
-    document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
-    document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
-    document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
+// Switches between sections of the app
+function switchSection(section) {
+    document.querySelectorAll('.content-section').forEach((sec) => {
+        sec.style.display = 'none';
+    });
+    document.getElementById(section + 'Section').style.display = 'block';
 }
 
-function clearPhoneNumberFormat(phoneNumber) {
-    // Remove all non-numeric characters from the phone number
-    return phoneNumber.replace(/\D/g, '');
+// Selects an item for ordering
+function selectItem(item) {
+    selectedOrderItem = item;
+    document.getElementById('selectedItem').innerText = item;
+    switchSection('orderDetails');
 }
 
-function formatPhoneNumber(phoneNumber) {
-    // Allow phone number to be entered in any format but sanitize it
-    const cleaned = clearPhoneNumberFormat(phoneNumber);
+// Submits the order and redirects to the home section
+function submitOrder(event) {
+    event.preventDefault();
 
-    // Optionally format the number (e.g., add dashes or spaces)
-    // For simplicity, returning the cleaned number
-    return cleaned;
+    const fullName = document.getElementById('orderFullName').value.trim();
+    const phoneNumber = document.getElementById('orderPhoneNumber').value.trim();
+    const location = document.getElementById('orderLocation').value.trim();
+
+    alert(`Order placed successfully!\nItem: ${selectedOrderItem}\nName: ${fullName}\nPhone: ${phoneNumber}\nLocation: ${location}`);
+    switchSection('home');
+}
+
+// Generates a 6-digit OTP
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000);
 }
