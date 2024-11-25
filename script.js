@@ -1,85 +1,140 @@
-let users = [];
-
-function toggleAuth() {
-    document.getElementById("signUpForm").style.display =
-        document.getElementById("signUpForm").style.display === "none" ? "block" : "none";
-    document.getElementById("loginForm").style.display =
-        document.getElementById("loginForm").style.display === "none" ? "block" : "none";
-}
+let currentUser = {};
+let generatedOTP = "";
 
 function signUp(event) {
     event.preventDefault();
-    const email = document.getElementById("signUpEmail").value;
-    const password = document.getElementById("signUpPassword").value;
-    const role = document.getElementById("role").value;
-    const location = document.getElementById("signUpLocation").value;
-    const phone = document.getElementById("signUpPhone").value;
 
-    if (users.find((user) => user.email === email)) {
-        alert("This email is already registered. Please use another email.");
-        return;
+    // Get values from the sign-up form
+    const email = document.getElementById('signUpEmail').value;
+    const location = document.getElementById('signUpLocation').value;
+    const phone = formatPhoneNumber(document.getElementById('signUpPhone').value);
+
+    // Store the user information
+    currentUser = { email, location, phone };
+
+    // Redirect to OTP page
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('otpPage').style.display = 'block';
+
+    // Generate OTP (Random 6-digit number)
+    generatedOTP = Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit OTP
+    document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
+
+    alert('Sign Up Successful! Please enter the OTP sent to your phone.');
+}
+
+function verifyOTP() {
+    const otpInput = document.getElementById('otpInput').value.trim();
+
+    if (otpInput === generatedOTP.toString()) {
+        alert('OTP Verified Successfully!');
+        toggleToApp();
+    } else {
+        alert('Invalid OTP. Please try again.');
     }
+}
 
-    users.push({ email, password, role, location, phone });
-    alert("Sign up successful! Please log in.");
-    toggleAuth();
+function addItem(item) {
+    const selectedItems = document.getElementById('selectedItems');
+    selectedItems.innerText = selectedItems.innerText === "Selected Items: None" 
+        ? `Selected Items: ${item}` 
+        : `${selectedItems.innerText}, ${item}`;
+}
+
+function toggleAuth() {
+    const signUpForm = document.getElementById('signUpForm');
+    const loginForm = document.getElementById('loginForm');
+
+    // Toggle between sign up and login forms
+    if (signUpForm.style.display === 'none') {
+        signUpForm.style.display = 'block';
+        loginForm.style.display = 'none';
+    } else {
+        signUpForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    }
+}
+
+function toggleToApp() {
+    // Hide the OTP page and show the app page
+    document.getElementById('otpPage').style.display = 'none';
+    document.getElementById('appSection').style.display = 'block';
+
+    // Populate account information (if applicable)
+    populateAccountInfo();
+}
+
+function switchSection(section) {
+    // Hide all content sections
+    document.querySelectorAll('.content-section').forEach((sec) => {
+        sec.style.display = 'none';
+    });
+
+    // Show the selected section
+    document.getElementById(section + 'Section').style.display = 'block';
 }
 
 function login(event) {
     event.preventDefault();
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
-    const user = users.find((user) => user.email === email && user.password === password);
 
-    if (user) {
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("appSection").style.display = "block";
-        document.getElementById("userEmail").textContent = email;
-        document.getElementById("userRole").textContent =
-            user.role.charAt(0).toUpperCase() + user.role.slice(1);
-        document.getElementById("userLocation").textContent = user.location || "N/A";
-        document.getElementById("userPhone").textContent = user.phone || "N/A";
-    } else {
-        alert("Invalid email or password.");
-    }
+    // Simulate login
+    alert('Login Successful!');
+    toggleToApp();
 }
 
 function logout() {
-    document.getElementById("authSection").style.display = "block";
-    document.getElementById("appSection").style.display = "none";
-}
-
-function switchSection(section) {
-    document.querySelectorAll(".content-section").forEach((sec) => (sec.style.display = "none"));
-    document.getElementById(section + "Section").style.display = "block";
-}
-
-function addItem(itemName) {
-    let selectedItems = document.getElementById("selectedItems");
-    if (selectedItems.textContent === "Selected Items: None") {
-        selectedItems.textContent = `Selected Items: ${itemName}`;
-    } else {
-        selectedItems.textContent += `, ${itemName}`;
-    }
-}
-
-function trackOrder() {
-    const trackingStatus = document.getElementById("trackingStatus");
-    trackingStatus.textContent = "Order is on the way!";
-    setTimeout(() => {
-        trackingStatus.textContent = "Driver is approaching your location!";
-    }, 3000);
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
+    alert('You have logged out.');
+    toggleToAuth();
 }
 
 function deleteAccount() {
-    if (confirm("Are you sure you want to delete your account?")) {
-        const email = document.getElementById("userEmail").textContent;
-        users = users.filter((user) => user.email !== email);
-        logout();
-        alert("Account deleted.");
+    if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+        alert('Account deleted successfully!');
+        resetApp();
     }
+}
+
+function toggleToAuth() {
+    // Switch to the authentication section (Sign Up/Login page)
+    document.getElementById('authSection').style.display = 'block';
+    document.getElementById('appSection').style.display = 'none';
+}
+
+function resetApp() {
+    // Reset all application states and forms
+    currentUser = {};
+    generatedOTP = "";
+
+    document.getElementById('signUpForm').reset();
+    document.getElementById('loginForm').reset();
+    document.getElementById('otpInput').value = "";
+
+    // Reset UI
+    document.getElementById('authSection').style.display = 'block';
+    document.getElementById('otpPage').style.display = 'none';
+    document.getElementById('appSection').style.display = 'none';
+
+    // Clear any selected items
+    document.getElementById('selectedItems').innerText = "Selected Items: None";
+}
+
+function populateAccountInfo() {
+    // Display user account details in the Account Section
+    document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
+    document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
+    document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
+}
+
+function clearPhoneNumberFormat(phoneNumber) {
+    // Remove all non-numeric characters from the phone number
+    return phoneNumber.replace(/\D/g, '');
+}
+
+function formatPhoneNumber(phoneNumber) {
+    // Allow phone number to be entered in any format but sanitize it
+    const cleaned = clearPhoneNumberFormat(phoneNumber);
+
+    // Optionally format the number (e.g., add dashes or spaces)
+    // For simplicity, returning the cleaned number
+    return cleaned;
 }
