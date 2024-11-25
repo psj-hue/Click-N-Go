@@ -6,7 +6,15 @@
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Bottom Navigation Bar Fix */
+        /* Styles for new sections and buttons */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #accountSection, #settingsSection, #contactSection, #developerSection {
+            display: none;
+        }
+
         #bottomNav {
             position: fixed;
             bottom: 0;
@@ -30,12 +38,29 @@
         #bottomNav button:hover {
             text-decoration: underline;
         }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .content-section {
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
     <div id="authSection">
         <h1>Welcome to Click n' Go!</h1>
-        
         <div id="signUpForm">
             <h2>Sign Up</h2>
             <form onsubmit="signUp(event)">
@@ -43,25 +68,14 @@
                 <input type="email" id="signUpEmail" required>
                 <label for="signUpPassword">Password:</label>
                 <input type="password" id="signUpPassword" required>
-                
                 <label for="signUpLocation">Location:</label>
                 <input type="text" id="signUpLocation" placeholder="Enter your location" required>
-
                 <label for="signUpPhone">Phone Number:</label>
                 <input type="tel" id="signUpPhone" placeholder="Enter your phone number" required>
-                
-                <!-- Role Selection -->
-                <label for="role">Choose Role:</label>
-                <select id="role" required>
-                    <option value="user">User</option>
-                    <option value="rider">Delivery Rider</option>
-                </select>
-
                 <button type="submit">Sign Up</button>
             </form>
             <p>Already have an account? <a href="#" onclick="toggleAuth()">Login</a></p>
         </div>
-
         <div id="loginForm" style="display: none;">
             <h2>Login</h2>
             <form onsubmit="login(event)">
@@ -73,6 +87,14 @@
             </form>
             <p>Don't have an account? <a href="#" onclick="toggleAuth()">Sign Up</a></p>
         </div>
+    </div>
+
+    <div id="otpPage" style="display: none;">
+        <h2>Verify Your OTP</h2>
+        <p id="otpMessage"></p>
+        <label for="otpInput">Enter OTP:</label>
+        <input type="text" id="otpInput" placeholder="Enter OTP">
+        <button onclick="verifyOTP()">Verify OTP</button>
     </div>
 
     <div id="appSection" style="display: none;">
@@ -92,88 +114,102 @@
         <section id="orderItemsSection" class="content-section" style="display: none;">
             <h2>Select Items</h2>
             <div id="itemList">
-                <button onclick="addItem('Burger')">Burger</button>
-                <button onclick="addItem('Milk Tea')">Milk Tea</button>
-                <button onclick="addItem('Fried Rice')">Fried Rice</button>
+                <div class="item-card">
+                    <img src="https://via.placeholder.com/100" alt="Burger">
+                    <p>Burger</p>
+                    <button onclick="addItem('Burger')">Add</button>
+                </div>
+                <div class="item-card">
+                    <img src="https://via.placeholder.com/100" alt="Milk Tea">
+                    <p>Milk Tea</p>
+                    <button onclick="addItem('Milk Tea')">Add</button>
+                </div>
+                <div class="item-card">
+                    <img src="https://via.placeholder.com/100" alt="Fried Rice">
+                    <p>Fried Rice</p>
+                    <button onclick="addItem('Fried Rice')">Add</button>
+                </div>
             </div>
             <p id="selectedItems">Selected Items: None</p>
-        </section>
-
-        <!-- Track Order Section -->
-        <section id="trackOrderSection" class="content-section" style="display: none;">
-            <h2>Track Your Order</h2>
-            <button onclick="trackOrder()">Start Tracking</button>
-            <p id="trackingStatus">No active order</p>
         </section>
 
         <!-- Account Section -->
         <section id="accountSection" class="content-section" style="display: none;">
             <h2>My Account</h2>
-            <p>Email: <span id="userEmail">user@example.com</span></p>
-            <p>Location: <span id="userLocation">N/A</span></p>
-            <p>Phone Number: <span id="userPhone">N/A</span></p>
-            <button onclick="logout()">Logout</button>
+            <p>Email: <span id="accountEmail"></span></p>
+            <p>Location: <span id="accountLocation"></span></p>
+            <p>Phone: <span id="accountPhone"></span></p>
         </section>
 
         <!-- Settings Section -->
         <section id="settingsSection" class="content-section" style="display: none;">
             <h2>Settings</h2>
-            <label>
-                <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()"> Dark Mode
-            </label>
+            <button onclick="logout()">Logout</button>
             <button onclick="deleteAccount()">Delete Account</button>
         </section>
 
         <!-- Contact Section -->
         <section id="contactSection" class="content-section" style="display: none;">
             <h2>Contact Us</h2>
-            <p>Feel free to reach out to us through the details below:</p>
-            <p><strong>Email:</strong> marcorobles604@gmail.com</p>
-            <p><strong>Phone:</strong> 09153150572</p>
-            <p><strong>Address:</strong> St. Mary's College of Marinduque</p>
+            <p>Email: marcorobles604@gmail.com</p>
+            <p>Contact Number: 09153150572</p>
+        </section>
+
+        <!-- Developer Section -->
+        <section id="developerSection" class="content-section" style="display: none;">
+            <h2>Developers</h2>
+            <p>JP</p>
+            <p>Sab</p>
         </section>
 
         <!-- Navigation Bar -->
         <nav id="bottomNav">
             <button onclick="switchSection('home')">Home</button>
             <button onclick="switchSection('orderItems')">Order Items</button>
-            <button onclick="switchSection('trackOrder')">Track Order</button>
             <button onclick="switchSection('account')">Account</button>
             <button onclick="switchSection('settings')">Settings</button>
             <button onclick="switchSection('contact')">Contact</button>
+            <button onclick="switchSection('developer')">Developer</button>
         </nav>
     </div>
 
     <script>
         let currentUser = {};
+        let generatedOTP = "";
 
         function signUp(event) {
             event.preventDefault();
-
             const email = document.getElementById('signUpEmail').value;
             const location = document.getElementById('signUpLocation').value;
             const phone = document.getElementById('signUpPhone').value;
 
             currentUser = { email, location, phone };
 
-            document.getElementById('userEmail').innerText = email;
-            document.getElementById('userLocation').innerText = location;
-            document.getElementById('userPhone').innerText = phone;
+            // Redirect to OTP page
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('otpPage').style.display = 'block';
 
-            alert('Sign Up Successful!');
+            // Generate OTP
+            generatedOTP = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit OTP
+            document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
 
-            toggleToApp();
+            alert('Sign Up Successful! Please enter the OTP sent to your phone.');
         }
 
-        function login(event) {
-            event.preventDefault();
-            alert('Login Successful!');
-            toggleToApp();
+        function verifyOTP() {
+            const otpInput = document.getElementById('otpInput').value;
+            if (otpInput === generatedOTP.toString()) {
+                alert('OTP Verified Successfully!');
+                toggleToApp();
+                populateAccountInfo(); // Populate account info after successful login
+            } else {
+                alert('Invalid OTP. Please try again.');
+            }
         }
 
-        function logout() {
-            alert('You have logged out.');
-            toggleToAuth();
+        function addItem(item) {
+            const selectedItems = document.getElementById('selectedItems');
+            selectedItems.innerText += selectedItems.innerText === "Selected Items: None" ? item : `, ${item}`;
         }
 
         function toggleAuth() {
@@ -190,13 +226,8 @@
         }
 
         function toggleToApp() {
-            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('otpPage').style.display = 'none';
             document.getElementById('appSection').style.display = 'block';
-        }
-
-        function toggleToAuth() {
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('appSection').style.display = 'none';
         }
 
         function switchSection(section) {
@@ -204,6 +235,32 @@
                 sec.style.display = 'none';
             });
             document.getElementById(section + 'Section').style.display = 'block';
+        }
+
+        function populateAccountInfo() {
+            document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
+            document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
+            document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
+        }
+
+        function logout() {
+            alert("Logged out successfully!");
+            resetApp();
+        }
+
+        function deleteAccount() {
+            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+                alert("Account deleted successfully!");
+                resetApp();
+            }
+        }
+
+        function resetApp() {
+            currentUser = {};
+            document.getElementById('appSection').style.display = 'none';
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('signUpForm').reset();
+            document.getElementById('loginForm').reset();
         }
     </script>
 </body>
