@@ -1,6 +1,6 @@
 let currentUser = {};
 let generatedOTP = "";
-let selectedOrderItem = "";
+const orders = []; // Array to store shared orders
 
 // Handles user sign-up
 function signUp(event) {
@@ -10,17 +10,13 @@ function signUp(event) {
     const location = document.getElementById('signUpLocation').value.trim();
     const phone = document.getElementById('signUpPhone').value.trim();
 
-    // Save user information
     currentUser = { email, location, phone };
 
-    // Redirect to OTP verification
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('otpPage').style.display = 'block';
 
-    // Generate and display OTP
     generatedOTP = generateOTP();
     document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
-
     alert('Sign Up Successful! Please enter the OTP sent to your phone.');
 }
 
@@ -54,7 +50,6 @@ function toggleAuth() {
 // Logs in the user
 function login(event) {
     event.preventDefault();
-
     alert('Login Successful!');
     toggleToApp();
     populateAccountInfo();
@@ -66,23 +61,23 @@ function toggleToApp() {
     document.getElementById('appSection').style.display = 'block';
 }
 
-// Populates account information
+// Populates the user's account information
 function populateAccountInfo() {
     document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
     document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
     document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
 }
 
-// Logs out the user
+// Logs out the user and resets the app state
 function logout() {
-    alert("Logged out successfully!");
+    alert('Logged out successfully!');
     resetApp();
 }
 
-// Deletes the user's account
+// Deletes the user's account and resets the app state
 function deleteAccount() {
     if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-        alert("Account deleted successfully!");
+        alert('Account deleted successfully!');
         resetApp();
     }
 }
@@ -100,10 +95,10 @@ function resetApp() {
     document.getElementById('otpPage').style.display = 'none';
     document.getElementById('appSection').style.display = 'none';
 
-    document.getElementById('selectedItems').innerText = "Selected Items: None";
+    updateOrderList(); // Clear order list
 }
 
-// Switches between sections of the app
+// Switches between different app sections
 function switchSection(section) {
     document.querySelectorAll('.content-section').forEach((sec) => {
         sec.style.display = 'none';
@@ -111,23 +106,59 @@ function switchSection(section) {
     document.getElementById(section + 'Section').style.display = 'block';
 }
 
-// Selects an item for ordering
-function selectItem(item) {
-    selectedOrderItem = item;
-    document.getElementById('selectedItem').innerText = item;
-    switchSection('orderDetails');
-}
-
-// Submits the order and redirects to the home section
-function submitOrder(event) {
+// Adds a new order to the shared list
+function addOrder(event) {
     event.preventDefault();
 
-    const fullName = document.getElementById('orderFullName').value.trim();
-    const phoneNumber = document.getElementById('orderPhoneNumber').value.trim();
-    const location = document.getElementById('orderLocation').value.trim();
+    const orderDescription = document.getElementById('orderDescription').value.trim();
+    if (orderDescription) {
+        orders.push({ description: orderDescription, user: currentUser.email || "Anonymous" });
+        updateOrderList();
+        document.getElementById('orderDescription').value = '';
+    } else {
+        alert("Please enter a valid order description.");
+    }
+}
 
-    alert(`Order placed successfully!\nItem: ${selectedOrderItem}\nName: ${fullName}\nPhone: ${phoneNumber}\nLocation: ${location}`);
-    switchSection('home');
+// Updates the shared orders list display
+function updateOrderList() {
+    const orderList = document.getElementById('orderList');
+    orderList.innerHTML = '<h3>Shared Orders:</h3>';
+
+    if (orders.length === 0) {
+        orderList.innerHTML += '<p>No orders shared yet. Be the first to add one!</p>';
+    } else {
+        orders.forEach((order, index) => {
+            const orderItem = document.createElement('div');
+            orderItem.className = 'order-item';
+            orderItem.innerHTML = `<strong>Order ${index + 1}:</strong> ${order.description} <br><em>Shared by: ${order.user}</em>`;
+            orderList.appendChild(orderItem);
+        });
+    }
+}
+
+// Handles sending feedback from the contact page
+function sendFeedback(event) {
+    event.preventDefault();
+    const message = document.getElementById('contactMessage').value.trim();
+    if (message) {
+        alert(`Your message has been sent:\n"${message}"`);
+        document.getElementById('contactMessage').value = '';
+    } else {
+        alert("Please enter a valid message.");
+    }
+}
+
+// Handles sending messages to developers
+function sendDeveloperMessage(event) {
+    event.preventDefault();
+    const message = document.getElementById('devMessage').value.trim();
+    if (message) {
+        alert(`Your message to the developers has been sent:\n"${message}"`);
+        document.getElementById('devMessage').value = '';
+    } else {
+        alert("Please enter a valid message.");
+    }
 }
 
 // Generates a 6-digit OTP
