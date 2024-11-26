@@ -6,7 +6,7 @@
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Styles for new sections and buttons */
+        /* General Styles */
         body {
             font-family: Arial, sans-serif;
         }
@@ -56,6 +56,32 @@
         .content-section {
             padding: 20px;
         }
+
+        .order-list {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+
+        .order-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .order-item strong {
+            color: #333;
+        }
+
+        .contact-info, .developer-info {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -101,51 +127,28 @@
         <!-- Header Section -->
         <header>
             <h1>Click n' Go!</h1>
-            <p>Your Reliable Transportation and Delivery Service</p>
+            <p>Your Reliable Peer-to-Peer Order Sharing Platform</p>
         </header>
 
         <!-- Home Section -->
         <section id="homeSection" class="content-section">
             <h2>Welcome, <span id="userRole">User</span>!</h2>
-            <p>Select items to add to your order or explore other sections below.</p>
+            <p>Explore shared orders or add your own!</p>
             <button onclick="alert('Ride Share Coming Soon!')">Ride Share (Coming Soon)</button>
         </section>
 
-        <!-- Order Items Section -->
+        <!-- Shared Orders Section -->
         <section id="orderItemsSection" class="content-section" style="display: none;">
-            <h2>Select Items</h2>
-            <div id="itemList">
-                <div class="item-card">
-                    <img src="https://via.placeholder.com/100" alt="Burger">
-                    <p>Burger</p>
-                    <button onclick="selectItem('Burger')">Select</button>
-                </div>
-                <div class="item-card">
-                    <img src="https://via.placeholder.com/100" alt="Milk Tea">
-                    <p>Milk Tea</p>
-                    <button onclick="selectItem('Milk Tea')">Select</button>
-                </div>
-                <div class="item-card">
-                    <img src="https://via.placeholder.com/100" alt="Fried Rice">
-                    <p>Fried Rice</p>
-                    <button onclick="selectItem('Fried Rice')">Select</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Order Details Section -->
-        <section id="orderDetailsSection" class="content-section">
-            <h2>Order Details</h2>
-            <p>Item: <span id="selectedItem"></span></p>
-            <form onsubmit="submitOrder(event)">
-                <label for="orderFullName">Full Name:</label>
-                <input type="text" id="orderFullName" placeholder="Enter your full name" required>
-                <label for="orderPhoneNumber">Phone Number:</label>
-                <input type="tel" id="orderPhoneNumber" placeholder="Enter your phone number" required>
-                <label for="orderLocation">Location:</label>
-                <input type="text" id="orderLocation" placeholder="Enter your location" required>
-                <button type="submit">Submit Order</button>
+            <h2>Peer-to-Peer Orders</h2>
+            <form onsubmit="addOrder(event)">
+                <label for="orderDescription">Order Description:</label>
+                <textarea id="orderDescription" placeholder="Enter your order details" required></textarea>
+                <button type="submit">Add Order</button>
             </form>
+            <div id="orderList" class="order-list">
+                <h3>Shared Orders:</h3>
+                <!-- Orders will be dynamically added here -->
+            </div>
         </section>
 
         <!-- Account Section -->
@@ -166,21 +169,35 @@
         <!-- Contact Section -->
         <section id="contactSection" class="content-section" style="display: none;">
             <h2>Contact Us</h2>
-            <p>Email: marcorobles604@gmail.com</p>
-            <p>Contact Number: 09153150572</p>
+            <div class="contact-info">
+                <p>Email: <a href="mailto:marcorobles604@gmail.com">marcorobles604@gmail.com</a></p>
+                <p>Contact Number: 09153150572</p>
+            </div>
+            <form onsubmit="sendFeedback(event)">
+                <label for="contactMessage">Send us a message:</label>
+                <textarea id="contactMessage" placeholder="Enter your message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
         </section>
 
         <!-- Developer Section -->
         <section id="developerSection" class="content-section" style="display: none;">
             <h2>Developers</h2>
-            <p>JP</p>
-            <p>Sab</p>
+            <div class="developer-info">
+                <p>Developer 1: JP</p>
+                <p>Developer 2: Sab</p>
+            </div>
+            <form onsubmit="sendDeveloperMessage(event)">
+                <label for="devMessage">Send a message to the developers:</label>
+                <textarea id="devMessage" placeholder="Enter your message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
         </section>
 
         <!-- Navigation Bar -->
         <nav id="bottomNav">
             <button onclick="switchSection('home')">Home</button>
-            <button onclick="switchSection('orderItems')">Order Items</button>
+            <button onclick="switchSection('orderItems')">Orders</button>
             <button onclick="switchSection('account')">Account</button>
             <button onclick="switchSection('settings')">Settings</button>
             <button onclick="switchSection('contact')">Contact</button>
@@ -191,27 +208,30 @@
     <script>
         let currentUser = {};
         let generatedOTP = "";
-        let selectedOrderItem = "";
+        const orders = []; // Array to store shared orders
 
+        // Handles user sign-up
         function signUp(event) {
             event.preventDefault();
-            const email = document.getElementById('signUpEmail').value;
-            const location = document.getElementById('signUpLocation').value;
-            const phone = document.getElementById('signUpPhone').value;
+
+            const email = document.getElementById('signUpEmail').value.trim();
+            const location = document.getElementById('signUpLocation').value.trim();
+            const phone = document.getElementById('signUpPhone').value.trim();
 
             currentUser = { email, location, phone };
 
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('otpPage').style.display = 'block';
 
-            generatedOTP = Math.floor(100000 + Math.random() * 900000);
+            generatedOTP = generateOTP();
             document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
-
             alert('Sign Up Successful! Please enter the OTP sent to your phone.');
         }
 
+        // Verifies the OTP entered by the user
         function verifyOTP() {
-            const otpInput = document.getElementById('otpInput').value;
+            const otpInput = document.getElementById('otpInput').value.trim();
+
             if (otpInput === generatedOTP.toString()) {
                 alert('OTP Verified Successfully!');
                 toggleToApp();
@@ -221,6 +241,7 @@
             }
         }
 
+        // Toggles between Sign Up and Login forms
         function toggleAuth() {
             const signUpForm = document.getElementById('signUpForm');
             const loginForm = document.getElementById('loginForm');
@@ -234,11 +255,58 @@
             }
         }
 
+        // Logs in the user
+        function login(event) {
+            event.preventDefault();
+            alert('Login Successful!');
+            toggleToApp();
+            populateAccountInfo();
+        }
+
+        // Switches to the main app section
         function toggleToApp() {
             document.getElementById('otpPage').style.display = 'none';
             document.getElementById('appSection').style.display = 'block';
         }
 
+        // Populates the user's account information
+        function populateAccountInfo() {
+            document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
+            document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
+            document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
+        }
+
+        // Logs out the user and resets the app state
+        function logout() {
+            alert('Logged out successfully!');
+            resetApp();
+        }
+
+        // Deletes the user's account and resets the app state
+        function deleteAccount() {
+            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+                alert('Account deleted successfully!');
+                resetApp();
+            }
+        }
+
+        // Resets the app to its initial state
+        function resetApp() {
+            currentUser = {};
+            generatedOTP = "";
+
+            document.getElementById('signUpForm').reset();
+            document.getElementById('loginForm').reset();
+            document.getElementById('otpInput').value = "";
+
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('otpPage').style.display = 'none';
+            document.getElementById('appSection').style.display = 'none';
+
+            updateOrderList(); // Clear order list
+        }
+
+        // Switches between different app sections
         function switchSection(section) {
             document.querySelectorAll('.content-section').forEach((sec) => {
                 sec.style.display = 'none';
@@ -246,46 +314,64 @@
             document.getElementById(section + 'Section').style.display = 'block';
         }
 
-        function populateAccountInfo() {
-            document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
-            document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
-            document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
-        }
+        // Adds a new order to the shared list
+        function addOrder(event) {
+            event.preventDefault();
 
-        function logout() {
-            alert("Logged out successfully!");
-            resetApp();
-        }
-
-        function deleteAccount() {
-            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-                alert("Account deleted successfully!");
-                resetApp();
+            const orderDescription = document.getElementById('orderDescription').value.trim();
+            if (orderDescription) {
+                orders.push({ description: orderDescription, user: currentUser.email || "Anonymous" });
+                updateOrderList();
+                document.getElementById('orderDescription').value = '';
+            } else {
+                alert("Please enter a valid order description.");
             }
         }
 
-        function resetApp() {
-            currentUser = {};
-            document.getElementById('appSection').style.display = 'none';
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('signUpForm').reset();
-            document.getElementById('loginForm').reset();
+        // Updates the shared orders list display
+        function updateOrderList() {
+            const orderList = document.getElementById('orderList');
+            orderList.innerHTML = '<h3>Shared Orders:</h3>';
+
+            if (orders.length === 0) {
+                orderList.innerHTML += '<p>No orders shared yet. Be the first to add one!</p>';
+            } else {
+                orders.forEach((order, index) => {
+                    const orderItem = document.createElement('div');
+                    orderItem.className = 'order-item';
+                    orderItem.innerHTML = `<strong>Order ${index + 1}:</strong> ${order.description} <br><em>Shared by: ${order.user}</em>`;
+                    orderList.appendChild(orderItem);
+                });
+            }
         }
 
-        function selectItem(item) {
-            selectedOrderItem = item;
-            document.getElementById('selectedItem').innerText = item;
-            switchSection('orderDetails');
-        }
-
-        function submitOrder(event) {
+        // Handles sending feedback from the contact page
+        function sendFeedback(event) {
             event.preventDefault();
-            const fullName = document.getElementById('orderFullName').value;
-            const phoneNumber = document.getElementById('orderPhoneNumber').value;
-            const location = document.getElementById('orderLocation').value;
+            const message = document.getElementById('contactMessage').value.trim();
+            if (message) {
+                alert(`Your message has been sent:\n"${message}"`);
+                document.getElementById('contactMessage').value = '';
+            } else {
+                alert("Please enter a valid message.");
+            }
+        }
 
-            alert(`Order placed successfully!\nItem: ${selectedOrderItem}\nName: ${fullName}\nPhone: ${phoneNumber}\nLocation: ${location}`);
-            switchSection('home');
+        // Handles sending messages to developers
+        function sendDeveloperMessage(event) {
+            event.preventDefault();
+            const message = document.getElementById('devMessage').value.trim();
+            if (message) {
+                alert(`Your message to the developers has been sent:\n"${message}"`);
+                document.getElementById('devMessage').value = '';
+            } else {
+                alert("Please enter a valid message.");
+            }
+        }
+
+        // Generates a 6-digit OTP
+        function generateOTP() {
+            return Math.floor(100000 + Math.random() * 900000);
         }
     </script>
 </body>
