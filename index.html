@@ -11,7 +11,7 @@
             font-family: Arial, sans-serif;
         }
 
-        #accountSection, #settingsSection, #contactSection, #developerSection, #orderDetailsSection {
+        #accountSection, #settingsSection, #contactSection, #developerSection {
             display: none;
         }
 
@@ -57,25 +57,23 @@
             padding: 20px;
         }
 
-        .order-list {
-            margin-top: 20px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
+        .facebook-link {
+            margin-top: 30px;
+            text-align: center;
         }
 
-        .order-item {
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .facebook-link a {
+            font-size: 20px;
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
         }
 
-        .order-item strong {
-            color: #333;
+        .facebook-link a:hover {
+            text-decoration: underline;
         }
 
-        .contact-info, .developer-info {
+        .contact-info {
             background-color: #f1f1f1;
             padding: 15px;
             border: 1px solid #ddd;
@@ -124,34 +122,25 @@
     </div>
 
     <div id="appSection" style="display: none;">
-        <!-- Header Section -->
         <header>
             <h1>Click n' Go!</h1>
-            <p>Your Reliable Peer-to-Peer Order Sharing Platform</p>
+            <p>Your Reliable Transportation & Delivery Service</p>
         </header>
 
-        <!-- Home Section -->
         <section id="homeSection" class="content-section">
-            <h2>Welcome, <span id="userRole">User</span>!</h2>
-            <p>Explore shared orders or add your own!</p>
-            <button onclick="alert('Ride Share Coming Soon!')">Ride Share (Coming Soon)</button>
+            <h2>Welcome, <span id="userEmailDisplay">User</span>!</h2>
+            <p>Explore our services and make your life easier!</p>
+            <button onclick="switchSection('orderItems')">Get Started</button>
         </section>
 
-        <!-- Shared Orders Section -->
         <section id="orderItemsSection" class="content-section" style="display: none;">
-            <h2>Peer-to-Peer Orders</h2>
-            <form onsubmit="addOrder(event)">
-                <label for="orderDescription">Order Description:</label>
-                <textarea id="orderDescription" placeholder="Enter your order details" required></textarea>
-                <button type="submit">Add Order</button>
-            </form>
-            <div id="orderList" class="order-list">
-                <h3>Shared Orders:</h3>
-                <!-- Orders will be dynamically added here -->
+            <h2>Delivery and Motor Service</h2>
+            <div class="facebook-link">
+                <p>Place an order on our Facebook page:</p>
+                <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank">Visit Facebook Page</a>
             </div>
         </section>
 
-        <!-- Account Section -->
         <section id="accountSection" class="content-section" style="display: none;">
             <h2>My Account</h2>
             <p>Email: <span id="accountEmail"></span></p>
@@ -159,219 +148,116 @@
             <p>Phone: <span id="accountPhone"></span></p>
         </section>
 
-        <!-- Settings Section -->
         <section id="settingsSection" class="content-section" style="display: none;">
             <h2>Settings</h2>
             <button onclick="logout()">Logout</button>
             <button onclick="deleteAccount()">Delete Account</button>
         </section>
 
-        <!-- Contact Section -->
         <section id="contactSection" class="content-section" style="display: none;">
             <h2>Contact Us</h2>
             <div class="contact-info">
-                <p>Email: <a href="mailto:marcorobles604@gmail.com">marcorobles604@gmail.com</a></p>
-                <p>Contact Number: 09153150572</p>
+                <p>Email: <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
+                <p>Contact Number: 09165540988</p>
             </div>
-            <form onsubmit="sendFeedback(event)">
-                <label for="contactMessage">Send us a message:</label>
-                <textarea id="contactMessage" placeholder="Enter your message" required></textarea>
-                <button type="submit">Send Message</button>
-            </form>
         </section>
 
-        <!-- Developer Section -->
         <section id="developerSection" class="content-section" style="display: none;">
-            <h2>Developers</h2>
-            <div class="developer-info">
-                <p>Developer 1: JP</p>
-                <p>Developer 2: Sab</p>
-            </div>
-            <form onsubmit="sendDeveloperMessage(event)">
-                <label for="devMessage">Send a message to the developers:</label>
-                <textarea id="devMessage" placeholder="Enter your message" required></textarea>
-                <button type="submit">Send Message</button>
-            </form>
+            <h2>About</h2>
+            <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
+
+</p>Click n' Go aims to provide a quality services that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
+          
+            <p>Developers:Jason M. Pascual </p>
+            <p>Developers:Ysabelle Homer G. Montellano </p>
         </section>
 
-        <!-- Navigation Bar -->
         <nav id="bottomNav">
             <button onclick="switchSection('home')">Home</button>
             <button onclick="switchSection('orderItems')">Orders</button>
             <button onclick="switchSection('account')">Account</button>
             <button onclick="switchSection('settings')">Settings</button>
             <button onclick="switchSection('contact')">Contact</button>
-            <button onclick="switchSection('developer')">Developer</button>
+            <button onclick="switchSection('developer')">About</button>
         </nav>
     </div>
 
     <script>
         let currentUser = {};
         let generatedOTP = "";
-        const orders = []; // Array to store shared orders
 
-        // Handles user sign-up
         function signUp(event) {
             event.preventDefault();
-
             const email = document.getElementById('signUpEmail').value.trim();
             const location = document.getElementById('signUpLocation').value.trim();
             const phone = document.getElementById('signUpPhone').value.trim();
-
             currentUser = { email, location, phone };
-
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('otpPage').style.display = 'block';
-
             generatedOTP = generateOTP();
             document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
-            alert('Sign Up Successful! Please enter the OTP sent to your phone.');
+            alert('Sign Up Successful! Check the OTP.');
+            toggleVisibility('authSection', 'otpPage');
         }
 
-        // Verifies the OTP entered by the user
         function verifyOTP() {
             const otpInput = document.getElementById('otpInput').value.trim();
-
             if (otpInput === generatedOTP.toString()) {
-                alert('OTP Verified Successfully!');
-                toggleToApp();
+                alert('OTP Verified!');
+                toggleVisibility('otpPage', 'appSection');
                 populateAccountInfo();
             } else {
-                alert('Invalid OTP. Please try again.');
+                alert('Invalid OTP. Try again.');
             }
         }
 
-        // Toggles between Sign Up and Login forms
-        function toggleAuth() {
-            const signUpForm = document.getElementById('signUpForm');
-            const loginForm = document.getElementById('loginForm');
-
-            if (signUpForm.style.display === 'none') {
-                signUpForm.style.display = 'block';
-                loginForm.style.display = 'none';
-            } else {
-                signUpForm.style.display = 'none';
-                loginForm.style.display = 'block';
-            }
-        }
-
-        // Logs in the user
         function login(event) {
             event.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            currentUser = { ...currentUser, email };
             alert('Login Successful!');
-            toggleToApp();
+            toggleVisibility('authSection', 'appSection');
             populateAccountInfo();
         }
 
-        // Switches to the main app section
-        function toggleToApp() {
-            document.getElementById('otpPage').style.display = 'none';
-            document.getElementById('appSection').style.display = 'block';
-        }
-
-        // Populates the user's account information
         function populateAccountInfo() {
             document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
             document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
             document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
+            document.getElementById('userEmailDisplay').innerText = currentUser.email || "User";
         }
 
-        // Logs out the user and resets the app state
         function logout() {
             alert('Logged out successfully!');
             resetApp();
         }
 
-        // Deletes the user's account and resets the app state
         function deleteAccount() {
-            if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-                alert('Account deleted successfully!');
+            if (confirm('Are you sure you want to delete your account?')) {
+                alert('Account deleted!');
                 resetApp();
             }
         }
 
-        // Resets the app to its initial state
         function resetApp() {
             currentUser = {};
             generatedOTP = "";
-
             document.getElementById('signUpForm').reset();
             document.getElementById('loginForm').reset();
             document.getElementById('otpInput').value = "";
-
-            document.getElementById('authSection').style.display = 'block';
-            document.getElementById('otpPage').style.display = 'none';
-            document.getElementById('appSection').style.display = 'none';
-
-            updateOrderList(); // Clear order list
+            toggleVisibility('appSection', 'authSection');
         }
 
-        // Switches between different app sections
         function switchSection(section) {
-            document.querySelectorAll('.content-section').forEach((sec) => {
-                sec.style.display = 'none';
-            });
+            document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
             document.getElementById(section + 'Section').style.display = 'block';
         }
 
-        // Adds a new order to the shared list
-        function addOrder(event) {
-            event.preventDefault();
-
-            const orderDescription = document.getElementById('orderDescription').value.trim();
-            if (orderDescription) {
-                orders.push({ description: orderDescription, user: currentUser.email || "Anonymous" });
-                updateOrderList();
-                document.getElementById('orderDescription').value = '';
-            } else {
-                alert("Please enter a valid order description.");
-            }
-        }
-
-        // Updates the shared orders list display
-        function updateOrderList() {
-            const orderList = document.getElementById('orderList');
-            orderList.innerHTML = '<h3>Shared Orders:</h3>';
-
-            if (orders.length === 0) {
-                orderList.innerHTML += '<p>No orders shared yet. Be the first to add one!</p>';
-            } else {
-                orders.forEach((order, index) => {
-                    const orderItem = document.createElement('div');
-                    orderItem.className = 'order-item';
-                    orderItem.innerHTML = `<strong>Order ${index + 1}:</strong> ${order.description} <br><em>Shared by: ${order.user}</em>`;
-                    orderList.appendChild(orderItem);
-                });
-            }
-        }
-
-        // Handles sending feedback from the contact page
-        function sendFeedback(event) {
-            event.preventDefault();
-            const message = document.getElementById('contactMessage').value.trim();
-            if (message) {
-                alert(`Your message has been sent:\n"${message}"`);
-                document.getElementById('contactMessage').value = '';
-            } else {
-                alert("Please enter a valid message.");
-            }
-        }
-
-        // Handles sending messages to developers
-        function sendDeveloperMessage(event) {
-            event.preventDefault();
-            const message = document.getElementById('devMessage').value.trim();
-            if (message) {
-                alert(`Your message to the developers has been sent:\n"${message}"`);
-                document.getElementById('devMessage').value = '';
-            } else {
-                alert("Please enter a valid message.");
-            }
-        }
-
-        // Generates a 6-digit OTP
         function generateOTP() {
             return Math.floor(100000 + Math.random() * 900000);
+        }
+
+        function toggleVisibility(hideSection, showSection) {
+            document.getElementById(hideSection).style.display = 'none';
+            document.getElementById(showSection).style.display = 'block';
         }
     </script>
 </body>
