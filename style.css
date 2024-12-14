@@ -11,12 +11,49 @@ body {
     min-height: 100vh;
     flex-direction: column;
     text-align: center;
+    overflow-x: hidden;
+    position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 0, 0, 0.03) 1px, rgba(0, 0, 0, 0.03) 2px),
+        repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0, 0, 0, 0.03) 1px, rgba(0, 0, 0, 0.03) 2px),
+       
+        linear-gradient(to right,
+            rgba(0, 0, 0, 0.02) 10px,
+            transparent 10px),
+
+        linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.02) 10px,
+            transparent 10px);
+    background-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px;
+    background-blend-mode: overlay;
+
+}
+
+
+/* Background Art */
+body::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background-image: radial-gradient(circle at 20% 20%, #ffc107 0%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(circle at 80% 80%, #4caf50 0%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(circle at 20% 80%, #2196f3 0%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(circle at 80% 20%, #f44336 0%, rgba(255, 255, 255, 0) 30%);
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
 }
 
 /* Headers and Text */
 h1, h2, label, p {
-    color: #000000; /* Black font */
+    color: #000000;
     margin: 10px 0;
+    transition: color 0.3s ease;
 }
 
 /* Bolded Text for Key Information */
@@ -35,30 +72,32 @@ h1, h2 {
 #authSection {
     width: 100%;
     max-width: 450px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
     text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 form {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     text-align: left;
 }
 
 input, select, button {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     margin: 10px 0;
     border: 2px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 16px;
     box-sizing: border-box;
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 input[type='email'], input[type='password'], input[type='text'], select {
-    background-color: #f9f9f9;
+    background-color: #f5f5f5;
 }
 
 button {
@@ -68,49 +107,72 @@ button {
     cursor: pointer;
     font-size: 18px;
     font-weight: bold;
-    transition: background-color 0.3s ease;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin: 10px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 button:hover {
     background-color: #40916c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* App Section */
 #appSection {
     width: 100%;
-    max-width: 500px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    max-width: 550px;
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Content Sections */
 .content-section {
     display: none;
-    margin-top: 20px;
+    margin-top: 25px;
+    animation: fadeIn 0.3s ease;
 }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 
 /* Order Items Buttons */
 #orderItemsSection button {
-    margin: 5px 0;
+    margin: 8px 0;
     background-color: #2d6a4f;
     color: white;
     border: none;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 12px 16px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 #orderItemsSection button:hover {
     background-color: #40916c;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 #selectedItems {
-    margin-top: 15px;
+    margin-top: 20px;
     font-size: 16px;
-    font-weight: bold; /* Bolded Selected Items Text */
+    font-weight: bold;
 }
 
 /* Bottom Navigation Bar */
@@ -119,7 +181,7 @@ button:hover {
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background-color: #2d6a4f; /* Green */
+    background-color: #2d6a4f;
     color: white;
     position: fixed;
     bottom: 20px;
@@ -127,6 +189,7 @@ button:hover {
     right: 20px;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 #bottomNav button {
@@ -135,46 +198,54 @@ button:hover {
     border: none;
     cursor: pointer;
     font-size: 16px;
-    font-weight: bold; /* Bolded Buttons */
+    font-weight: bold;
     padding: 10px;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 #bottomNav button:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 5px;
+    transform: translateY(-2px);
+}
+
+#bottomNav button:active {
+    transform: translateY(0);
 }
 
 /* Contact Section */
 #contactSection {
     text-align: left;
-    margin-top: 20px;
+    margin-top: 25px;
 }
 
 #contactSection p {
     font-size: 16px;
-    font-weight: bold; /* Bolded Contact Information */
+    font-weight: bold;
 }
 
 /* Track Order Status */
 #trackingStatus {
-    margin-top: 15px;
+    margin-top: 20px;
     font-size: 16px;
-    font-weight: bold; /* Bolded Tracking Status */
+    font-weight: bold;
     color: #2d6a4f;
 }
 
 /* Dark Mode */
 .dark-mode {
     background-color: #333;
-    color: #ffeb3b; /* Yellow text */
+    color: #ffeb3b;
 }
 
-.dark-mode #authSection, 
+.dark-mode body::before{
+    opacity: 0.1;
+}
+.dark-mode #authSection,
 .dark-mode #appSection {
     background-color: #444;
     color: #ffeb3b;
-    box-shadow: 0 4px 10px rgba(255, 235, 59, 0.2);
+    box-shadow: 0 6px 15px rgba(255, 235, 59, 0.2);
 }
 
 .dark-mode button {
@@ -194,5 +265,5 @@ button:hover {
 
 .dark-mode #bottomNav {
     background-color: #444;
-    box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
+     box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
 }
