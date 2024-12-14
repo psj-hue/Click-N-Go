@@ -1,8 +1,8 @@
 /* General Styles */
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #ffd700; /* Yellow background */
-    color: #000000; /* Black font */
+    background-color: #ffd700;
+    color: #000000;
     margin: 0;
     padding: 0;
     display: flex;
@@ -14,22 +14,18 @@ body {
     overflow-x: hidden;
     position: relative;
     transition: background-color 0.3s ease, color 0.3s ease;
-    background-image:
+     background-image:
         repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 0, 0, 0.03) 1px, rgba(0, 0, 0, 0.03) 2px),
         repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0, 0, 0, 0.03) 1px, rgba(0, 0, 0, 0.03) 2px),
-       
         linear-gradient(to right,
             rgba(0, 0, 0, 0.02) 10px,
             transparent 10px),
-
         linear-gradient(to bottom,
             rgba(0, 0, 0, 0.02) 10px,
             transparent 10px);
     background-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px;
     background-blend-mode: overlay;
-
 }
-
 
 /* Background Art */
 body::before {
@@ -40,9 +36,9 @@ body::before {
     width: 120%;
     height: 120%;
     background-image: radial-gradient(circle at 20% 20%, #ffc107 0%, rgba(255, 255, 255, 0) 30%),
-    radial-gradient(circle at 80% 80%, #4caf50 0%, rgba(255, 255, 255, 0) 30%),
-    radial-gradient(circle at 20% 80%, #2196f3 0%, rgba(255, 255, 255, 0) 30%),
-    radial-gradient(circle at 80% 20%, #f44336 0%, rgba(255, 255, 255, 0) 30%);
+        radial-gradient(circle at 80% 80%, #4caf50 0%, rgba(255, 255, 255, 0) 30%),
+        radial-gradient(circle at 20% 80%, #2196f3 0%, rgba(255, 255, 255, 0) 30%),
+        radial-gradient(circle at 80% 20%, #f44336 0%, rgba(255, 255, 255, 0) 30%);
     opacity: 0.3;
     z-index: -1;
     pointer-events: none;
@@ -50,14 +46,18 @@ body::before {
 }
 
 /* Headers and Text */
-h1, h2, label, p {
+h1,
+h2,
+label,
+p {
     color: #000000;
     margin: 10px 0;
     transition: color 0.3s ease;
 }
 
 /* Bolded Text for Key Information */
-h1, h2 {
+h1,
+h2 {
     font-weight: bold;
 }
 
@@ -85,7 +85,10 @@ form {
     text-align: left;
 }
 
-input, select, button {
+input,
+select,
+button,
+textarea {
     width: 100%;
     padding: 14px;
     margin: 10px 0;
@@ -96,12 +99,19 @@ input, select, button {
     transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
-input[type='email'], input[type='password'], input[type='text'], select {
+textarea {
+    height: 100px;
+}
+
+input[type='email'],
+input[type='password'],
+input[type='text'],
+select {
     background-color: #f5f5f5;
 }
 
 button {
-    background-color: #2d6a4f; /* Green buttons */
+    background-color: #2d6a4f;
     color: white;
     border: none;
     cursor: pointer;
@@ -144,10 +154,16 @@ button:active {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* Order Items Buttons */
 #orderItemsSection button {
@@ -232,15 +248,55 @@ button:active {
     color: #2d6a4f;
 }
 
+/* Error Messages */
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Loading Messages */
+.loading-message {
+    color: #2d6a4f;
+    font-style: italic;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* Auth Messages */
+.auth-message {
+    font-style: italic;
+    margin-top: 10px;
+}
+
+/* Clear Input button */
+.clear-input {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 14px;
+    color: #999;
+    display: none;
+}
+
+input:focus + .clear-input,
+input:valid + .clear-input,
+input:not(:placeholder-shown) + .clear-input {
+    display: block;
+}
+
 /* Dark Mode */
 .dark-mode {
     background-color: #333;
     color: #ffeb3b;
 }
 
-.dark-mode body::before{
+.dark-mode body::before {
     opacity: 0.1;
 }
+
 .dark-mode #authSection,
 .dark-mode #appSection {
     background-color: #444;
@@ -257,7 +313,9 @@ button:active {
     background-color: #666;
 }
 
-.dark-mode input, .dark-mode select {
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea {
     background-color: #555;
     color: #ffeb3b;
     border-color: #666;
@@ -265,5 +323,50 @@ button:active {
 
 .dark-mode #bottomNav {
     background-color: #444;
-     box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
+    box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
+}
+
+/* Dark Mode button*/
+#toggleDarkMode button {
+    background-color: #2d6a4f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#toggleDarkMode button:hover {
+    background-color: #40916c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#toggleDarkMode {
+    margin-bottom: 20px;
+}
+
+/*Loading animation*/
+.loading {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1.5s linear infinite;
+  margin:0 auto;
+  display: none;
+}
+.loading-message.loading {
+    display:block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
