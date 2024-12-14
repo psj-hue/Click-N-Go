@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,10 @@
             font-family: Arial, sans-serif;
         }
 
-        #accountSection, #settingsSection, #contactSection, #developerSection {
+        #accountSection,
+        #settingsSection,
+        #contactSection,
+        #developerSection {
             display: none;
         }
 
@@ -82,42 +86,57 @@
         }
     </style>
 </head>
+
 <body>
     <div id="authSection">
         <h1>Welcome to Click n' Go!</h1>
         <div id="signUpForm">
             <h2>Sign Up</h2>
-            <form onsubmit="signUp(event)">
-                <label for="signUpEmail">Email:</label>
-                <input type="email" id="signUpEmail" required>
-                <label for="signUpPassword">Password:</label>
-                <input type="password" id="signUpPassword" required>
-                <label for="signUpLocation">Location:</label>
-                <input type="text" id="signUpLocation" placeholder="Enter your location" required>
-                <label for="signUpPhone">Phone Number:</label>
-                <input type="tel" id="signUpPhone" placeholder="Enter your phone number" required>
+            <form id="signupFormElem" onsubmit="signUp(event)">
+                <div class="form-group">
+                    <label for="signUpEmail">Email:</label>
+                    <input type="email" id="signUpEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signUpPassword">Password:</label>
+                    <input type="password" id="signUpPassword" required>
+                </div>
+                 <div class="form-group">
+                    <label for="signUpLocation">Location:</label>
+                    <input type="text" id="signUpLocation" placeholder="Enter your location" required>
+                </div>
+                <div class="form-group">
+                    <label for="signUpPhone">Phone Number:</label>
+                    <input type="tel" id="signUpPhone" placeholder="Enter your phone number" required>
+                </div>
                 <button type="submit">Sign Up</button>
             </form>
-            <p>Already have an account? <a href="#" onclick="toggleAuth()">Login</a></p>
+            <p>Already have an account? <a href="#" onclick="toggleAuth('loginForm')">Login</a></p>
         </div>
         <div id="loginForm" style="display: none;">
             <h2>Login</h2>
-            <form onsubmit="login(event)">
-                <label for="loginEmail">Email:</label>
-                <input type="email" id="loginEmail" required>
-                <label for="loginPassword">Password:</label>
-                <input type="password" id="loginPassword" required>
+            <form id="loginFormElem" onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
                 <button type="submit">Login</button>
             </form>
-            <p>Don't have an account? <a href="#" onclick="toggleAuth()">Sign Up</a></p>
+            <p>Don't have an account? <a href="#" onclick="toggleAuth('signUpForm')">Sign Up</a></p>
         </div>
     </div>
 
     <div id="otpPage" style="display: none;">
         <h2>Verify Your OTP</h2>
         <p id="otpMessage"></p>
-        <label for="otpInput">Enter OTP:</label>
-        <input type="text" id="otpInput" placeholder="Enter OTP">
+        <div class="form-group">
+            <label for="otpInput">Enter OTP:</label>
+            <input type="text" id="otpInput" placeholder="Enter OTP">
+        </div>
         <button onclick="verifyOTP()">Verify OTP</button>
     </div>
 
@@ -166,10 +185,10 @@
             <h2>About</h2>
             <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
 
-</p>Click n' Go aims to provide a quality services that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
-          
-            <p>Developers:Jason M. Pascual </p>
-            <p>Developers:Ysabelle Homer G. Montellano </p>
+            <p>Click n' Go aims to provide a quality services that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
+
+            <p>Developers: Jason M. Pascual</p>
+            <p>Developers: Ysabelle Homer G. Montellano</p>
         </section>
 
         <nav id="bottomNav">
@@ -240,8 +259,8 @@
         function resetApp() {
             currentUser = {};
             generatedOTP = "";
-            document.getElementById('signUpForm').reset();
-            document.getElementById('loginForm').reset();
+            document.getElementById('signupFormElem').reset();
+            document.getElementById('loginFormElem').reset();
             document.getElementById('otpInput').value = "";
             toggleVisibility('appSection', 'authSection');
         }
@@ -255,10 +274,16 @@
             return Math.floor(100000 + Math.random() * 900000);
         }
 
+        function toggleAuth(formId) {
+            document.getElementById('signUpForm').style.display = formId === 'signUpForm' ? 'block' : 'none';
+            document.getElementById('loginForm').style.display = formId === 'loginForm' ? 'block' : 'none';
+        }
+
         function toggleVisibility(hideSection, showSection) {
             document.getElementById(hideSection).style.display = 'none';
             document.getElementById(showSection).style.display = 'block';
         }
     </script>
 </body>
+
 </html>
