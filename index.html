@@ -6,85 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* General Styles */
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        #accountSection,
-        #settingsSection,
-        #contactSection,
-        #developerSection {
-            display: none;
-        }
-
-        #bottomNav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #333;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            color: white;
-        }
-
-        #bottomNav button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        #bottomNav button:hover {
-            text-decoration: underline;
-        }
-
-        button {
-            padding: 10px 15px;
-            background-color: #007BFF;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .content-section {
-            padding: 20px;
-        }
-
-        .facebook-link {
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .facebook-link a {
-            font-size: 20px;
-            color: #007BFF;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .facebook-link a:hover {
-            text-decoration: underline;
-        }
-
-        .contact-info {
-            background-color: #f1f1f1;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -96,18 +18,33 @@
                 <div class="form-group">
                     <label for="signUpEmail">Email:</label>
                     <input type="email" id="signUpEmail" required>
+                    <span class="clear-input" onclick="clearInput('signUpEmail')">X</span>
+                    <div class="error-message" id="signUpEmailError"></div>
                 </div>
                 <div class="form-group">
                     <label for="signUpPassword">Password:</label>
                     <input type="password" id="signUpPassword" required>
+                    <span class="clear-input" onclick="clearInput('signUpPassword')">X</span>
+                    <div class="error-message" id="signUpPasswordError"></div>
                 </div>
-                 <div class="form-group">
+                <div class="form-group">
                     <label for="signUpLocation">Location:</label>
                     <input type="text" id="signUpLocation" placeholder="Enter your location" required>
+                    <span class="clear-input" onclick="clearInput('signUpLocation')">X</span>
                 </div>
                 <div class="form-group">
                     <label for="signUpPhone">Phone Number:</label>
                     <input type="tel" id="signUpPhone" placeholder="Enter your phone number" required>
+                    <span class="clear-input" onclick="clearInput('signUpPhone')">X</span>
+                    <div class="error-message" id="signUpPhoneError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="signUpRole">Role:</label>
+                    <select id="signUpRole" required>
+                        <option value="customer">Customer</option>
+                        <option value="driver">Driver</option>
+                        <option value="admin">Admin</option>
+                    </select>
                 </div>
                 <button type="submit">Sign Up</button>
             </form>
@@ -119,15 +56,24 @@
                 <div class="form-group">
                     <label for="loginEmail">Email:</label>
                     <input type="email" id="loginEmail" required>
+                    <span class="clear-input" onclick="clearInput('loginEmail')">X</span>
+                    <div class="error-message" id="loginEmailError"></div>
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Password:</label>
                     <input type="password" id="loginPassword" required>
+                    <span class="clear-input" onclick="clearInput('loginPassword')">X</span>
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe">Remember Me</label>
                 </div>
                 <button type="submit">Login</button>
             </form>
             <p>Don't have an account? <a href="#" onclick="toggleAuth('signUpForm')">Sign Up</a></p>
         </div>
+        <div id="authMessage" class="auth-message"></div>
     </div>
 
     <div id="otpPage" style="display: none;">
@@ -136,8 +82,11 @@
         <div class="form-group">
             <label for="otpInput">Enter OTP:</label>
             <input type="text" id="otpInput" placeholder="Enter OTP">
+            <span class="clear-input" onclick="clearInput('otpInput')">X</span>
+            <div class="error-message" id="otpError"></div>
         </div>
         <button onclick="verifyOTP()">Verify OTP</button>
+        <div id="otpStatus" class="loading-message"></div>
     </div>
 
     <div id="appSection" style="display: none;">
@@ -146,8 +95,11 @@
             <p>Your Reliable Transportation & Delivery Service</p>
         </header>
 
+
         <section id="homeSection" class="content-section">
             <h2>Welcome, <span id="userEmailDisplay">User</span>!</h2>
+            <p id="welcomeMessage"></p>
+            <div id="clockDisplay"></div>
             <p>Explore our services and make your life easier!</p>
             <button onclick="switchSection('orderItems')">Get Started</button>
         </section>
@@ -158,19 +110,89 @@
                 <p>Place an order on our Facebook page:</p>
                 <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank">Visit Facebook Page</a>
             </div>
+             <div id="locationSection" >
+                <h2>Location</h2>
+                <div id="mapContainer" style="height: 300px; border: 1px solid #ccc;">
+                    <!-- Map will be inserted here -->
+                     <p> User Location: <span id="userLocationDisplay"></span> </p>
+                </div>
+            </div>
+            <div id="orderPanel" style="display:none;">
+                <h3>Order Panel</h3>
+                <p>This is where a customer can track the order</p>
+                <button onclick="simulateOrder()">Simulate Order</button>
+                 <div id="trackingPanel"></div>
+            </div>
+            <div id="orderRequestPanel" style="display:none;">
+                <h3>Order Request Panel</h3>
+                <p>This is where the driver can see all order requests</p>
+            </div>
+            <button onclick="showOrderHistory()">Show Order History</button>
+
         </section>
+
+        <section id="orderHistorySection" class="content-section" style="display: none;">
+            <h2>Order History</h2>
+            <div id="orderList"></div>
+        </section>
+
 
         <section id="accountSection" class="content-section" style="display: none;">
             <h2>My Account</h2>
             <p>Email: <span id="accountEmail"></span></p>
             <p>Location: <span id="accountLocation"></span></p>
             <p>Phone: <span id="accountPhone"></span></p>
+            <p>Role: <span id="userRole"></span></p>
+              <div id="adminSection"  style="margin-top:15px;">
+                 <h2>Admin Panel</h2>
+                 <div id="allUsers">
+                </div>
+            </div>
         </section>
 
         <section id="settingsSection" class="content-section" style="display: none;">
             <h2>Settings</h2>
+            <div id="toggleDarkMode">
+                <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+            </div>
             <button onclick="logout()">Logout</button>
             <button onclick="deleteAccount()">Delete Account</button>
+              <button onclick="switchSection('userPreferences')">Preferences</button>
+        </section>
+        <section id="developerSection" class="content-section" style="display: none;">
+            <h2>About</h2>
+            <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
+            <p>Click n' Go aims to provide a quality service that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
+                <div id="faqSection" style="margin-top:15px;">
+                 <h2>FAQ</h2>
+                  <div id="faqList">
+                </div>
+                 </div>
+            <div id="feedbackSection" style="margin-top:15px;">
+                <h2>Feedback</h2>
+                 <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                    <div class="form-group">
+                        <label for="feedbackMessage">Message:</label>
+                        <textarea id="feedbackMessage" placeholder="Enter your feedback" required></textarea>
+                    </div>
+                   <button type="submit">Submit Feedback</button>
+                 </form>
+                <div id="feedbackStatus" class="loading-message"></div>
+              </div>
+            <p>Developers: Jason M. Pascual</p>
+            <p>Developers: Ysabelle Homer G. Montellano</p>
+        </section>
+          <section id="userPreferencesSection" class="content-section" style="display: none;">
+            <h2>Preferences</h2>
+            <div class="form-group">
+                 <label for="languageSelect">Language:</label>
+                 <select id="languageSelect">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                 </select>
+            </div>
+           <button onclick="savePreferences()">Save Preferences</button>
+             <div id="userPreferencesStatus" class="loading-message"></div>
         </section>
 
         <section id="contactSection" class="content-section" style="display: none;">
@@ -181,15 +203,6 @@
             </div>
         </section>
 
-        <section id="developerSection" class="content-section" style="display: none;">
-            <h2>About</h2>
-            <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
-
-            <p>Click n' Go aims to provide a quality services that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
-
-            <p>Developers: Jason M. Pascual</p>
-            <p>Developers: Ysabelle Homer G. Montellano</p>
-        </section>
 
         <nav id="bottomNav">
             <button onclick="switchSection('home')">Home</button>
@@ -201,89 +214,7 @@
         </nav>
     </div>
 
-    <script>
-        let currentUser = {};
-        let generatedOTP = "";
-
-        function signUp(event) {
-            event.preventDefault();
-            const email = document.getElementById('signUpEmail').value.trim();
-            const location = document.getElementById('signUpLocation').value.trim();
-            const phone = document.getElementById('signUpPhone').value.trim();
-            currentUser = { email, location, phone };
-            generatedOTP = generateOTP();
-            document.getElementById('otpMessage').innerText = `Your OTP is: ${generatedOTP}`;
-            alert('Sign Up Successful! Check the OTP.');
-            toggleVisibility('authSection', 'otpPage');
-        }
-
-        function verifyOTP() {
-            const otpInput = document.getElementById('otpInput').value.trim();
-            if (otpInput === generatedOTP.toString()) {
-                alert('OTP Verified!');
-                toggleVisibility('otpPage', 'appSection');
-                populateAccountInfo();
-            } else {
-                alert('Invalid OTP. Try again.');
-            }
-        }
-
-        function login(event) {
-            event.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            currentUser = { ...currentUser, email };
-            alert('Login Successful!');
-            toggleVisibility('authSection', 'appSection');
-            populateAccountInfo();
-        }
-
-        function populateAccountInfo() {
-            document.getElementById('accountEmail').innerText = currentUser.email || "Not Provided";
-            document.getElementById('accountLocation').innerText = currentUser.location || "Not Provided";
-            document.getElementById('accountPhone').innerText = currentUser.phone || "Not Provided";
-            document.getElementById('userEmailDisplay').innerText = currentUser.email || "User";
-        }
-
-        function logout() {
-            alert('Logged out successfully!');
-            resetApp();
-        }
-
-        function deleteAccount() {
-            if (confirm('Are you sure you want to delete your account?')) {
-                alert('Account deleted!');
-                resetApp();
-            }
-        }
-
-        function resetApp() {
-            currentUser = {};
-            generatedOTP = "";
-            document.getElementById('signupFormElem').reset();
-            document.getElementById('loginFormElem').reset();
-            document.getElementById('otpInput').value = "";
-            toggleVisibility('appSection', 'authSection');
-        }
-
-        function switchSection(section) {
-            document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
-            document.getElementById(section + 'Section').style.display = 'block';
-        }
-
-        function generateOTP() {
-            return Math.floor(100000 + Math.random() * 900000);
-        }
-
-        function toggleAuth(formId) {
-            document.getElementById('signUpForm').style.display = formId === 'signUpForm' ? 'block' : 'none';
-            document.getElementById('loginForm').style.display = formId === 'loginForm' ? 'block' : 'none';
-        }
-
-        function toggleVisibility(hideSection, showSection) {
-            document.getElementById(hideSection).style.display = 'none';
-            document.getElementById(showSection).style.display = 'block';
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>
