@@ -95,7 +95,6 @@
             <p>Your Reliable Transportation & Delivery Service</p>
         </header>
 
-
         <section id="homeSection" class="content-section">
             <h2>Welcome, <span id="userEmailDisplay">User</span>!</h2>
             <p id="welcomeMessage"></p>
@@ -104,7 +103,7 @@
             <button onclick="switchSection('orderItems')">Get Started</button>
         </section>
 
-        <section id="orderItemsSection" class="content-section" style="display: none;">
+         <section id="orderItemsSection" class="content-section" style="display: none;">
             <h2>Delivery and Motor Service</h2>
             <div class="facebook-link">
                 <p>Place an order on our Facebook page:</p>
@@ -113,7 +112,6 @@
              <div id="locationSection" >
                 <h2>Location</h2>
                 <div id="mapContainer" style="height: 300px; border: 1px solid #ccc;">
-                    <!-- Map will be inserted here -->
                      <p> User Location: <span id="userLocationDisplay"></span> </p>
                 </div>
             </div>
@@ -122,13 +120,20 @@
                 <p>This is where a customer can track the order</p>
                 <button onclick="simulateOrder()">Simulate Order</button>
                  <div id="trackingPanel"></div>
+                   <div id="chatBox">
+                        <h3>Chat with Driver</h3>
+                        <div id="chatMessages"></div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInput" placeholder="Type your message">
+                            <button onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
             </div>
             <div id="orderRequestPanel" style="display:none;">
                 <h3>Order Request Panel</h3>
                 <p>This is where the driver can see all order requests</p>
             </div>
             <button onclick="showOrderHistory()">Show Order History</button>
-
         </section>
 
         <section id="orderHistorySection" class="content-section" style="display: none;">
@@ -157,9 +162,9 @@
             </div>
             <button onclick="logout()">Logout</button>
             <button onclick="deleteAccount()">Delete Account</button>
-              <button onclick="switchSection('userPreferences')">Preferences</button>
+             <button onclick="switchSection('userPreferences')">Preferences</button>
         </section>
-        <section id="developerSection" class="content-section" style="display: none;">
+          <section id="developerSection" class="content-section" style="display: none;">
             <h2>About</h2>
             <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
             <p>Click n' Go aims to provide a quality service that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
@@ -182,7 +187,7 @@
             <p>Developers: Jason M. Pascual</p>
             <p>Developers: Ysabelle Homer G. Montellano</p>
         </section>
-          <section id="userPreferencesSection" class="content-section" style="display: none;">
+        <section id="userPreferencesSection" class="content-section" style="display: none;">
             <h2>Preferences</h2>
             <div class="form-group">
                  <label for="languageSelect">Language:</label>
@@ -195,7 +200,7 @@
              <div id="userPreferencesStatus" class="loading-message"></div>
         </section>
 
-        <section id="contactSection" class="content-section" style="display: none;">
+         <section id="contactSection" class="content-section" style="display: none;">
             <h2>Contact Us</h2>
             <div class="contact-info">
                 <p>Email: <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
@@ -203,14 +208,13 @@
             </div>
         </section>
 
-
         <nav id="bottomNav">
             <button onclick="switchSection('home')">Home</button>
             <button onclick="switchSection('orderItems')">Orders</button>
             <button onclick="switchSection('account')">Account</button>
             <button onclick="switchSection('settings')">Settings</button>
             <button onclick="switchSection('contact')">Contact</button>
-            <button onclick="switchSection('developer')">About</button>
+             <button onclick="switchSection('developer')">About</button>
         </nav>
     </div>
 
