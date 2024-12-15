@@ -53,12 +53,14 @@ p {
     color: #000000;
     margin: 10px 0;
     transition: color 0.3s ease;
+    line-height: 1.6; /* Improved line height */
 }
 
 /* Bolded Text for Key Information */
 h1,
 h2 {
     font-weight: bold;
+    letter-spacing: 0.5px; /* Slight letter spacing */
 }
 
 #contactSection h2,
@@ -66,6 +68,7 @@ h2 {
 #userEmail,
 #userRole {
     font-weight: bold;
+    letter-spacing: 0.5px;
 }
 
 /* Auth Section */
@@ -75,9 +78,10 @@ h2 {
     padding: 30px;
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 15px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Slightly larger shadow */
     text-align: center;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin: 20px; /* Add margin */
 }
 
 form {
@@ -101,6 +105,7 @@ textarea {
 
 textarea {
     height: 100px;
+    resize: vertical; /* Allow vertical resizing only */
 }
 
 input[type='email'],
@@ -120,19 +125,19 @@ button {
     border-radius: 10px;
     padding: 14px 20px;
     margin: 10px 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2); /* Slightly more prominent shadow */
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 button:hover {
     background-color: #40916c;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+     transform: translateY(-3px); /* Slightly larger move on hover */
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
 }
 
 button:active {
     transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduced shadow when active */
 }
 
 /* App Section */
@@ -142,8 +147,14 @@ button:active {
     padding: 30px;
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 15px;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Slightly larger shadow */
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
+     margin: 20px; /* Add margin */
+}
+header{
+    margin-bottom: 20px;
+     padding-bottom: 20px;
+        border-bottom: 1px solid #ddd;
 }
 
 /* Content Sections */
@@ -151,6 +162,10 @@ button:active {
     display: none;
     margin-top: 25px;
     animation: fadeIn 0.3s ease;
+     padding: 15px; /* Add padding to content sections */
+        border-radius: 10px;
+        background-color: #f9f9f9;
+       box-shadow: 0 2px 4px rgba(0,0,0, 0.1);
 }
 
 @keyframes fadeIn {
@@ -204,7 +219,7 @@ button:active {
     left: 20px;
     right: 20px;
     border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -301,7 +316,7 @@ input:not(:placeholder-shown) + .clear-input {
 .dark-mode #appSection {
     background-color: #444;
     color: #ffeb3b;
-    box-shadow: 0 6px 15px rgba(255, 235, 59, 0.2);
+    box-shadow: 0 8px 20px rgba(255, 235, 59, 0.2);
 }
 
 .dark-mode button {
@@ -323,7 +338,7 @@ input:not(:placeholder-shown) + .clear-input {
 
 .dark-mode #bottomNav {
     background-color: #444;
-    box-shadow: 0 2px 5px rgba(255, 235, 59, 0.2);
+    box-shadow: 0 3px 7px rgba(255, 235, 59, 0.2);
 }
 
 /* Dark Mode button*/
@@ -369,4 +384,92 @@ input:not(:placeholder-shown) + .clear-input {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+/* Facebook Link*/
+.facebook-link {
+    background-color: #e0e0e0;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    display: inline-block;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0, 0.1);
+}
+
+.facebook-link a {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: #1877f2;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+.facebook-link a:hover {
+    background-color: #145da0;
+}
+/* Chat box styles */
+#chatBox {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+     background-color: #f5f5f5;
+     box-shadow: 0 2px 4px rgba(0,0,0, 0.1);
+}
+
+#chatMessages {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 5px;
+    margin-bottom: 10px;
+    background-color: #fff;
+     border-radius: 5px;
+}
+
+.chat-input-area {
+    display: flex;
+}
+
+#chatInput {
+    flex-grow: 1;
+    padding: 10px;
+    margin-right: 5px;
+    border: 1px solid #ddd;
+      border-radius: 5px;
+}
+
+#chatBox button {
+  background-color: #2d6a4f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    padding: 10px 10px;
+     margin: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#chatBox button:hover {
+  background-color: #40916c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+.message {
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 10px;
+     background-color: #f0f0f0;
+      width: fit-content;
+      max-width: 80%;
+}
+.message.own {
+    background-color: #e0f7fa;
+     text-align: right;
+      margin-left: auto;
 }
