@@ -49,7 +49,7 @@
             </form>
             <p>Already have an account? <a href="#" onclick="toggleAuth('loginForm')">Login</a></p>
         </div>
-        <div id="loginForm" style="display: none;">
+        <div id="loginForm">
             <h2>Login</h2>
             <form id="loginFormElem" onsubmit="login(event)">
                 <div class="form-group">
@@ -72,11 +72,11 @@
             </form>
             <p>Don't have an account? <a href="#" onclick="toggleAuth('signUpForm')">Sign Up</a></p>
         </div>
-        <!-- Google Sign-In Button REMOVED -->
+        <button id="googleSignInButton">Sign in with Google</button>
         <div id="authMessage" class="auth-message"></div>
     </div>
 
-    <div id="otpPage" style="display: none;">
+    <div id="otpPage">
         <h2>Verify Your OTP</h2>
         <p id="otpMessage"></p>
         <div class="form-group">
@@ -89,7 +89,7 @@
         <div id="otpStatus" class="loading-message"></div>
     </div>
 
-    <div id="appSection" style="display: none;">
+    <div id="appSection">
         <header>
             <h1>Click n' Go!</h1>
             <p>Your Reliable Transportation & Delivery Service</p>
@@ -103,19 +103,19 @@
             <button onclick="switchSection('orderItemsSection')">Get Started</button>
         </section>
 
-         <section id="orderItemsSection" class="content-section" style="display: none;">
+         <section id="orderItemsSection" class="content-section">
             <h2>Delivery and Motor Service</h2>
             <div class="facebook-link">
                 <p>Place an order on our Facebook page:</p>
                 <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank">Visit Facebook Page</a>
             </div>
              <div id="locationSection" >
-                <h2>Location</h2>
-                <div id="mapContainer" style="height: 300px; border: 1px solid #ccc;">
+                <h2>Your Location</h2>
+                <div id="mapContainer">
                      <p> User Location: <span id="userLocationDisplay"></span> </p>
                 </div>
             </div>
-            <div id="orderPanel" style="display:none;">
+            <div id="orderPanel">
                 <h3>Order Panel</h3>
                 <p>This is where a customer can track the order</p>
                 <button onclick="simulateOrder()">Simulate Order</button>
@@ -129,32 +129,32 @@
                         </div>
                     </div>
             </div>
-            <div id="orderRequestPanel" style="display:none;">
+            <div id="orderRequestPanel">
                 <h3>Order Request Panel</h3>
                 <p>This is where the driver can see all order requests</p>
             </div>
             <button onclick="showOrderHistory()">Show Order History</button>
         </section>
 
-        <section id="orderHistorySection" class="content-section" style="display: none;">
+        <section id="orderHistorySection" class="content-section">
             <h2>Order History</h2>
             <div id="orderList"></div>
         </section>
 
-        <section id="accountSection" class="content-section" style="display: none;">
+        <section id="accountSection" class="content-section">
             <h2>My Account</h2>
             <p>Email: <span id="accountEmail"></span></p>
             <p>Location: <span id="accountLocation"></span></p>
             <p>Phone: <span id="accountPhone"></span></p>
             <p>Role: <span id="userRole"></span></p>
-              <div id="adminSection"  style="margin-top:15px;">
+              <div id="adminSection">
                  <h2>Admin Panel</h2>
                  <div id="allUsers">
                 </div>
             </div>
         </section>
 
-        <section id="settingsSection" class="content-section" style="display: none;">
+        <section id="settingsSection" class="content-section">
             <h2>Settings</h2>
             <div id="toggleDarkMode">
                 <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
@@ -163,16 +163,16 @@
             <button onclick="deleteAccount()">Delete Account</button>
             <button onclick="switchSection('userPreferencesSection')">Preferences</button>
         </section>
-          <section id="developerSection" class="content-section" style="display: none;">
+          <section id="developerSection" class="content-section">
             <h2>About</h2>
             <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
             <p>Click n' Go aims to provide a quality service that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
-                <div id="faqSection" style="margin-top:15px;">
+                <div id="faqSection">
                  <h2>FAQ</h2>
                   <div id="faqList">
                 </div>
                  </div>
-            <div id="feedbackSection" style="margin-top:15px;">
+            <div id="feedbackSection">
                 <h2>Feedback</h2>
                  <form id="feedbackForm" onsubmit="submitFeedback(event)">
                     <div class="form-group">
@@ -186,7 +186,7 @@
             <p>Developers: Jason M. Pascual</p>
             <p>Developers: Ysabelle Homer G. Montellano</p>
         </section>
-        <section id="userPreferencesSection" class="content-section" style="display: none;">
+        <section id="userPreferencesSection" class="content-section">
             <h2>Preferences</h2>
             <div class="form-group">
                  <label for="languageSelect">Language:</label>
@@ -199,7 +199,7 @@
              <div id="userPreferencesStatus" class="loading-message"></div>
         </section>
 
-         <section id="contactSection" class="content-section" style="display: none;">
+         <section id="contactSection" class="content-section">
             <h2>Contact Us</h2>
             <div class="contact-info">
                 <p>Email: <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
