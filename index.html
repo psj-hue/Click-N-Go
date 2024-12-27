@@ -6,13 +6,18 @@
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Include Firebase SDKs HERE, BEFORE your script.js -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
 </head>
 <body>
     <div id="authSection">
         <h1>Welcome to Click n' Go!</h1>
         <div id="signUpForm">
             <h2>Sign Up</h2>
-            <form id="signupFormElem" onsubmit="window.signUp(event)">
+            <form id="signupFormElem" onsubmit="signUp(event)">
                 <div class="form-group">
                     <label for="signUpEmail">Email:</label>
                     <input type="email" id="signUpEmail" required>
@@ -46,7 +51,7 @@
                 </div>
                 <button type="submit">Sign Up</button>
             </form>
-            <p>Already have an account? <a href="#" onclick="window.toggleAuth('loginForm')">Login</a></p>
+            <p>Already have an account? <a href="#" onclick="toggleAuth('loginForm')">Login</a></p>
         </div>
         <div id="loginForm" style="display: none;">
             <h2>Login</h2>
@@ -69,7 +74,7 @@
                 </div>
                 <button type="submit">Login</button>
             </form>
-            <p>Don't have an account? <a href="#" onclick="window.toggleAuth('signUpForm')">Sign Up</a></p>
+            <p>Don't have an account? <a href="#" onclick="toggleAuth('signUpForm')">Sign Up</a></p>
         </div>
         <!-- Google Sign-In Button -->
         <div id="g_id_onload"
@@ -115,7 +120,7 @@
             <p id="welcomeMessage"></p>
             <div id="clockDisplay"></div>
             <p>Explore our services and make your life easier!</p>
-            <button onclick="switchSection('orderItems')">Get Started</button>
+            <button onclick="switchSection('orderItemsSection')">Get Started</button>
         </section>
 
          <section id="orderItemsSection" class="content-section" style="display: none;">
@@ -134,104 +139,104 @@
                 <h3>Order Panel</h3>
                 <p>This is where a customer can track the order</p>
                 <button onclick="simulateOrder()">Simulate Order</button>
-                     <div id="trackingPanel"></div>
-                       <div id="chatBox">
-                            <h3>Chat with Driver</h3>
-                            <div id="chatMessages"></div>
-                            <div class="chat-input-area">
-                                <input type="text" id="chatInput" placeholder="Type your message">
-                                <button onclick="sendMessage()">Send</button>
-                            </div>
+                 <div id="trackingPanel"></div>
+                   <div id="chatBox">
+                        <h3>Chat with Driver</h3>
+                        <div id="chatMessages"></div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInput" placeholder="Type your message">
+                            <button onclick="sendMessage()">Send</button>
                         </div>
-                </div>
-                <div id="orderRequestPanel" style="display:none;">
-                    <h3>Order Request Panel</h3>
-                    <p>This is where the driver can see all order requests</p>
-                </div>
-                <button onclick="showOrderHistory()">Show Order History</button>
-            </section>
-
-            <section id="orderHistorySection" class="content-section" style="display: none;">
-                <h2>Order History</h2>
-                <div id="orderList"></div>
-            </section>
-
-            <section id="accountSection" class="content-section" style="display: none;">
-                <h2>My Account</h2>
-                <p>Email: <span id="accountEmail"></span></p>
-                <p>Location: <span id="accountLocation"></span></p>
-                <p>Phone: <span id="accountPhone"></span></p>
-                <p>Role: <span id="userRole"></span></p>
-                  <div id="adminSection"  style="margin-top:15px;">
-                     <h2>Admin Panel</h2>
-                     <div id="allUsers">
                     </div>
-                </div>
-            </section>
+            </div>
+            <div id="orderRequestPanel" style="display:none;">
+                <h3>Order Request Panel</h3>
+                <p>This is where the driver can see all order requests</p>
+            </div>
+            <button onclick="showOrderHistory()">Show Order History</button>
+        </section>
 
-            <section id="settingsSection" class="content-section" style="display: none;">
-                <h2>Settings</h2>
-                <div id="toggleDarkMode">
-                    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+        <section id="orderHistorySection" class="content-section" style="display: none;">
+            <h2>Order History</h2>
+            <div id="orderList"></div>
+        </section>
+
+        <section id="accountSection" class="content-section" style="display: none;">
+            <h2>My Account</h2>
+            <p>Email: <span id="accountEmail"></span></p>
+            <p>Location: <span id="accountLocation"></span></p>
+            <p>Phone: <span id="accountPhone"></span></p>
+            <p>Role: <span id="userRole"></span></p>
+              <div id="adminSection"  style="margin-top:15px;">
+                 <h2>Admin Panel</h2>
+                 <div id="allUsers">
                 </div>
-                <button onclick="logout()">Logout</button>
-                <button onclick="deleteAccount()">Delete Account</button>
-                 <button onclick="switchSection('userPreferences')">Preferences</button>
-            </section>
-              <section id="developerSection" class="content-section" style="display: none;">
-                <h2>About</h2>
-                <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
-                <p>Click n' Go aims to provide a quality service that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
-                    <div id="faqSection" style="margin-top:15px;">
-                     <h2>FAQ</h2>
-                      <div id="faqList">
+            </div>
+        </section>
+
+        <section id="settingsSection" class="content-section" style="display: none;">
+            <h2>Settings</h2>
+            <div id="toggleDarkMode">
+                <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+            </div>
+            <button onclick="logout()">Logout</button>
+            <button onclick="deleteAccount()">Delete Account</button>
+            <button onclick="switchSection('userPreferences'Section)">Preferences</button>
+        </section>
+          <section id="developerSection" class="content-section" style="display: none;">
+            <h2>About</h2>
+            <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
+            <p>Click n' Go aims to provide a quality service that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
+                <div id="faqSection" style="margin-top:15px;">
+                 <h2>FAQ</h2>
+                  <div id="faqList">
+                </div>
+                 </div>
+            <div id="feedbackSection" style="margin-top:15px;">
+                <h2>Feedback</h2>
+                 <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                    <div class="form-group">
+                        <label for="feedbackMessage">Message:</label>
+                        <textarea id="feedbackMessage" placeholder="Enter your feedback" required></textarea>
                     </div>
-                     </div>
-                <div id="feedbackSection" style="margin-top:15px;">
-                    <h2>Feedback</h2>
-                     <form id="feedbackForm" onsubmit="submitFeedback(event)">
-                        <div class="form-group">
-                            <label for="feedbackMessage">Message:</label>
-                            <textarea id="feedbackMessage" placeholder="Enter your feedback" required></textarea>
-                        </div>
-                       <button type="submit">Submit Feedback</button>
-                     </form>
-                    <div id="feedbackStatus" class="loading-message"></div>
-                  </div>
-                <p>Developers: Jason M. Pascual</p>
-                <p>Developers: Ysabelle Homer G. Montellano</p>
-            </section>
-            <section id="userPreferencesSection" class="content-section" style="display: none;">
-                <h2>Preferences</h2>
-                <div class="form-group">
-                     <label for="languageSelect">Language:</label>
-                     <select id="languageSelect">
-                        <option value="en">English</option>
-                        <option value="es">Spanish</option>
-                     </select>
-                </div>
-               <button onclick="savePreferences()">Save Preferences</button>
-                 <div id="userPreferencesStatus" class="loading-message"></div>
-            </section>
+                   <button type="submit">Submit Feedback</button>
+                 </form>
+                <div id="feedbackStatus" class="loading-message"></div>
+              </div>
+            <p>Developers: Jason M. Pascual</p>
+            <p>Developers: Ysabelle Homer G. Montellano</p>
+        </section>
+        <section id="userPreferencesSection" class="content-section" style="display: none;">
+            <h2>Preferences</h2>
+            <div class="form-group">
+                 <label for="languageSelect">Language:</label>
+                 <select id="languageSelect">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                 </select>
+            </div>
+           <button onclick="savePreferences()">Save Preferences</button>
+             <div id="userPreferencesStatus" class="loading-message"></div>
+        </section>
 
-             <section id="contactSection" class="content-section" style="display: none;">
-                <h2>Contact Us</h2>
-                <div class="contact-info">
-                    <p>Email: <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
-                    <p>Contact Number: 09165540988</p>
-                </div>
-            </section>
+         <section id="contactSection" class="content-section" style="display: none;">
+            <h2>Contact Us</h2>
+            <div class="contact-info">
+                <p>Email: <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
+                <p>Contact Number: 09165540988</p>
+            </div>
+        </section>
 
-            <nav id="bottomNav">
-                <button onclick="switchSection('home')">Home</button>
-                <button onclick="switchSection('orderItems')">Orders</button>
-                <button onclick="switchSection('account')">Account</button>
-                <button onclick="switchSection('settings')">Settings</button>
-                <button onclick="switchSection('contact')">Contact</button>
-                 <button onclick="switchSection('developer')">About</button>
-            </nav>
-        </div>
+        <nav id="bottomNav">
+            <button onclick="switchSection('homeSection')">Home</button>
+            <button onclick="switchSection('orderItemsSection')">Orders</button>
+            <button onclick="switchSection('accountSection')">Account</button>
+            <button onclick="switchSection('settingsSection')">Settings</button>
+            <button onclick="switchSection('contactSection')">Contact</button>
+            <button onclick="switchSection('developer'Section)">About</button>
+        </nav>
+    </div>
 
-        <script type="module" src="script.js"></script>
-    </body>
-    </html>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
