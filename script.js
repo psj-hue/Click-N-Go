@@ -1,6 +1,25 @@
-// No Firebase configuration needed for Google Sign-In with Google Identity Services
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
 
-const db = firebase.firestore(); // Initialize Firestore
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyD-pAz5_An9-i777fVmDyzAVFvlCdSN8kY",
+  authDomain: "awesome-project-59d12.firebaseapp.com",
+  projectId: "awesome-project-59d12",
+  storageBucket: "awesome-project-59d12.firebasestorage.app",
+  messagingSenderId: "934701962652",
+  appId: "1:934701962652:web:17ffe603b8ccfcb7ea6459",
+  measurementId: "G-09E03HDR4Z"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+// Initialize Firestore
+const db = getFirestore(app);
 
 let generatedOTP = ""; // No longer needed
 const feedbackMessages = JSON.parse(localStorage.getItem('feedbackMessages')) || [];
@@ -84,7 +103,9 @@ async function updateUIForSignedInUser(user) {
 
 async function getUserRoleFromFirestore(email) {
     try {
-        const querySnapshot = await db.collection('users').where('email', '==', email).get();
+        const usersCollection = collection(db, 'users');
+        const q = query(usersCollection, where('email', '==', email));
+        const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
             return querySnapshot.docs[0].data().role;
         }
@@ -125,7 +146,9 @@ async function signUp(event) {
 
     try {
         // Store additional user info in Firestore (assuming email/password signup)
-        await db.collection('users').doc(email).set({ // Use email as document ID for simplicity
+        const usersCollection = collection(db, 'users');
+        const userDocRef = doc(usersCollection, email); // Use email as document ID
+        await setDoc(userDocRef, {
             email: email,
             location: location,
             phone: phone,
@@ -174,8 +197,9 @@ function populateAccountInfo(user) {
 
 async function getUserProfile(email) {
     try {
-        const doc = await db.collection('users').doc(email).get();
-        return doc.data();
+        const userDocRef = doc(db, 'users', email);
+        const docSnap = await getDoc(userDocRef);
+        return docSnap.data();
     } catch (error) {
         console.error("Error fetching user profile:", error);
         return null;
@@ -199,7 +223,8 @@ function logout() {
 function deleteAccount() {
     const userEmail = currentUser?.email;
     if (userEmail && confirm('Are you sure you want to delete your account?')) {
-        db.collection('users').doc(userEmail).delete()
+        const userDocRef = doc(db, 'users', userEmail);
+        deleteDoc(userDocRef)
             .then(() => {
                 document.getElementById('authMessage').innerText = 'Account deleted!';
                 logout(); // Also log out after deleting
@@ -270,8 +295,9 @@ async function loadAllUsers() {
     setTimeout(async () => {
         allUsersElement.innerHTML = '';
         try {
-            const snapshot = await db.collection('users').get();
-            snapshot.forEach(doc => {
+            const usersCollection = collection(db, 'users');
+            const querySnapshot = await getDocs(usersCollection);
+            querySnapshot.forEach(doc => {
                 const user = doc.data();
                 const userDiv = document.createElement('div');
                 userDiv.innerHTML = `
