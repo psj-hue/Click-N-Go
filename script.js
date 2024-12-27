@@ -1,264 +1,122 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyD-pAz5_An9-i777fVmDyzAVFvlCdSN8kY",
-  authDomain: "awesome-project-59d12.firebaseapp.com",
-  projectId: "awesome-project-59d12",
-  storageBucket: "awesome-project-59d12.firebasestorage.app",
-  messagingSenderId: "934701962652",
-  appId: "1:934701962652:web:17ffe603b8ccfcb7ea6459",
-  measurementId: "G-09E03HDR4Z"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-// Initialize Firestore
-const db = getFirestore(app);
-
-let generatedOTP = ""; // No longer needed
-const feedbackMessages = JSON.parse(localStorage.getItem('feedbackMessages')) || [];
-const faqData = [
-    {
-        question: "What services do you provide?",
-        answer: "We provide 12-hour motor-taxi and delivery services."
-    },
-    {
-        question: "How can I place an order?",
-        answer: "You can place an order through our Facebook page."
-    },
-    {
-        question: "How do I contact support?",
-        answer: "You can email us at clickngoservice@gmail.com or call us at 09165540988."
-    }
-];
-
-let currentUser = null; // Store the current user information
+setInterval(updateClock, 1000);
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Google Sign-In
-    google.accounts.id.initialize({
-        client_id: '735535160092-mrurmqhnrjmrp6kb6tokrj5ob5d134hp.apps.googleusercontent.com',
-        callback: handleCredentialResponse
-    });
-
-    // Render the Google Sign-In button
-    google.accounts.id.renderButton(
-        document.getElementById('googleSignInDiv'),
-        { theme: "outline", size: "large" }  // customization attributes
-    );
-    google.accounts.id.prompt(); // to display the One Tap dialog
-
-    // Check if there's a previously logged-in user (e.g., token in local storage)
-    const storedUser = localStorage.getItem('googleUser');
+    const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
         currentUser = JSON.parse(storedUser);
         updateUIForSignedInUser(currentUser);
-    } else {
-        switchSection('home'); // Show default home if not signed in
     }
-
     loadFaq();
-    updateClock();
+    loadPreferences();
+    updateMap();
     displayWelcomeMessage();
-    setInterval(updateClock, 1000);
 });
 
-window.handleCredentialResponse = function(response) {
-    console.log("Google Credential Response:", response);
-    const idToken = response.credential;
-    const decodedToken = JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    console.log("Decoded ID Token:", decodedToken);
-
-    currentUser = decodedToken;
-    localStorage.setItem('googleUser', JSON.stringify(currentUser));
-    updateUIForSignedInUser(currentUser);
-    // In a real application, you would likely send the idToken to your server for verification and session management.
-};
+let currentUser = null;
+let feedbackMessages = JSON.parse(localStorage.getItem('feedbackMessages')) || [];
+const faqData = [
+    { question: "What is Click n' Go?", answer: "Click n' Go is a digital platform providing motor-taxi and delivery services." },
+    { question: "How do I book a service?", answer: "You can book a service after logging in through the 'Orders' section." },
+    { question: "Is my data safe?", answer: "We take data privacy seriously and ensure your information is protected." }
+];
 
 async function updateUIForSignedInUser(user) {
-    toggleVisibility('authSection', 'appSection');
+    toggleVisibility('authSection', 'appContent');
+    document.getElementById('accountEmail').innerText = user.email;
     populateAccountInfo(user);
-    // Assuming a default role for Google Sign-in users or fetch from server
-    const role = await getUserRoleFromFirestore(user.email);
-    if (role === 'admin') {
-        switchSection('account');
-        loadAllUsers();
-    } else if (role) {
-        switchSection('home');
-        displayDashboard(role);
-        updateMap();
-    } else {
-        // Handle case where role is not found (e.g., new user)
-        switchSection('home');
-        displayDashboard('customer'); // Default role
-        updateMap();
-    }
+    // Simulate getting user role - replace with your actual logic if needed
+    const role = user.role || 'customer'; // Default to customer
+    document.getElementById('userRole').innerText = role;
+    switchSection('home'); // Show home section after login
 }
 
-async function getUserRoleFromFirestore(email) {
-    try {
-        const usersCollection = collection(db, 'users');
-        const q = query(usersCollection, where('email', '==', email));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-            return querySnapshot.docs[0].data().role;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching user role:", error);
-        return null;
-    }
-}
-
-window.signUp = async function(event) {
+async function signUp(event) {
     event.preventDefault();
     const email = document.getElementById('signUpEmail').value.trim();
     const password = document.getElementById('signUpPassword').value.trim();
-    const location = document.getElementById('signUpLocation').value.trim();
-    const phone = document.getElementById('signUpPhone').value.trim();
-    const role = document.getElementById('signUpRole').value;
 
     if (!isValidEmail(email)) {
-        document.getElementById('signUpEmailError').innerText = 'Invalid Email format.';
+        document.getElementById('authMessage').innerText = 'Invalid email format.';
         return;
-    } else {
-        document.getElementById('signUpEmailError').innerText = '';
     }
-
     if (password.length < 6) {
-        document.getElementById('signUpPasswordError').innerText = 'Password must be at least 6 characters.';
+        document.getElementById('authMessage').innerText = 'Password must be at least 6 characters.';
         return;
-    } else {
-        document.getElementById('signUpPasswordError').innerText = '';
-    }
-    if (!isValidPhoneNumber(phone)) {
-        document.getElementById('signUpPhoneError').innerText = 'Invalid Phone number.';
-        return;
-    } else {
-        document.getElementById('signUpPhoneError').innerText = '';
     }
 
-    try {
-        // Store additional user info in Firestore (assuming email/password signup)
-        const usersCollection = collection(db, 'users');
-        const userDocRef = doc(usersCollection, email); // Use email as document ID
-        await setDoc(userDocRef, {
-            email: email,
-            location: location,
-            phone: phone,
-            role: role
-        });
-        document.getElementById('authMessage').innerText = 'Sign up successful!';
-        // Directly navigate to app
-        currentUser = { email: email }; // Simulate logged-in user
-        localStorage.setItem('googleUser', JSON.stringify(currentUser));
-        updateUIForSignedInUser(currentUser);
-
-    } catch (error) {
-        document.getElementById('authMessage').innerText = error.message;
+    const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
+    if (existingUsers.find(user => user.email === email)) {
+        document.getElementById('authMessage').innerText = 'Email already in use.';
+        return;
     }
-};
+
+    const newUser = { email: email, password: password, role: 'customer' }; // Default role
+    existingUsers.push(newUser);
+    localStorage.setItem('users', JSON.stringify(existingUsers));
+    document.getElementById('authMessage').innerText = 'Sign up successful! Please log in.';
+    document.getElementById('signupFormElem').reset();
+    toggleAuth('loginForm');
+}
 
 function login(event) {
     event.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
 
-    // For simplicity, assuming you have a way to verify email/password (e.g., against Firestore or a backend)
-    // This is a placeholder - replace with your actual authentication logic
-    getUserRoleFromFirestore(email).then(role => {
-        if (role) {
-            document.getElementById('authMessage').innerText = 'Login successful!';
-            currentUser = { email: email }; // Simulate logged-in user
-            localStorage.setItem('googleUser', JSON.stringify(currentUser));
-            updateUIForSignedInUser(currentUser);
-        } else {
-            document.getElementById('authMessage').innerText = 'Invalid credentials.';
-        }
-    });
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (user) {
+        document.getElementById('authMessage').innerText = 'Login successful!';
+        currentUser = { email: user.email, role: user.role };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateUIForSignedInUser(currentUser);
+    } else {
+        document.getElementById('authMessage').innerText = 'Invalid credentials.';
+    }
 }
 
 function populateAccountInfo(user) {
-    document.getElementById('accountEmail').innerText = user.email || "Not Provided";
-    document.getElementById('userEmailDisplay').innerText = user.email || "User";
-    getUserProfile(user.email).then(profile => {
-        if (profile) {
-            document.getElementById('accountLocation').innerText = profile.location || "Not Provided";
-            document.getElementById('accountPhone').innerText = profile.phone || "Not Provided";
-            document.getElementById('userRole').innerText = profile.role || "Not Provided";
-        }
-    });
-}
-
-async function getUserProfile(email) {
-    try {
-        const userDocRef = doc(db, 'users', email);
-        const docSnap = await getDoc(userDocRef);
-        return docSnap.data();
-    } catch (error) {
-        console.error("Error fetching user profile:", error);
-        return null;
-    }
+    document.getElementById('accountEmail').innerText = user.email;
+    // You might want to store and retrieve additional account info in local storage
+    // For now, these are placeholders
+    document.getElementById('accountLocation').innerText = 'Not Set';
+    document.getElementById('accountPhone').innerText = 'Not Set';
 }
 
 function logout() {
-    localStorage.removeItem('googleUser');
+    localStorage.removeItem('currentUser');
     currentUser = null;
-    document.getElementById('authMessage').innerText = 'Logged out successfully!';
-    resetApp();
-    switchSection('home'); // Go back to the home/auth section
+    toggleVisibility('appContent', 'authSection');
+    document.getElementById('authMessage').innerText = 'Logged out successfully.';
 }
 
 function deleteAccount() {
-    const userEmail = currentUser?.email;
-    if (userEmail && confirm('Are you sure you want to delete your account?')) {
-        const userDocRef = doc(db, 'users', userEmail);
-        deleteDoc(userDocRef)
-            .then(() => {
-                document.getElementById('authMessage').innerText = 'Account deleted!';
-                logout(); // Also log out after deleting
-            })
-            .catch(error => {
-                document.getElementById('authMessage').innerText = 'Error deleting account.';
-            });
+    const confirmDelete = confirm("Are you sure you want to delete your account?");
+    if (confirmDelete) {
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const updatedUsers = users.filter(user => user.email !== currentUser.email);
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        toggleVisibility('appContent', 'authSection');
+        document.getElementById('authMessage').innerText = 'Account deleted successfully.';
     }
 }
 
-function resetApp() {
-    document.getElementById('signupFormElem').reset();
-    document.getElementById('loginFormElem').reset();
-    toggleVisibility('appSection', 'authSection');
+function clearErrors() {
     document.querySelectorAll('.error-message').forEach(item => item.innerHTML = '');
 }
 
-window.toggleAuth = function(formId) {
+function toggleAuth(formId) {
     document.getElementById('signUpForm').style.display = formId === 'signUpForm' ? 'block' : 'none';
     document.getElementById('loginForm').style.display = formId === 'loginForm' ? 'block' : 'none';
     document.getElementById('authMessage').innerText = '';
-};
+}
 
 function switchSection(section) {
     document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
-    const userEmail = currentUser?.email;
-    getUserRoleFromFirestore(userEmail).then(role => {
-        if (section === 'account' && role === 'admin') {
-            document.getElementById('adminSection').style.display = 'block';
-            loadAllUsers();
-        } else {
-            document.getElementById('adminSection').style.display = 'none';
-        }
-        document.getElementById(section + 'Section').style.display = 'block';
-        document.getElementById('authMessage').innerText = '';
-        if (section === 'orderItems') {
-            updateMap();
-        }
-    });
+    document.getElementById(`${section}Section`).style.display = 'block';
 }
 
 function toggleVisibility(hideSection, showSection) {
@@ -289,24 +147,16 @@ async function loadAllUsers() {
     allUsersElement.innerHTML = '<div class="loading-message loading">Loading users...</div>';
     setTimeout(async () => {
         allUsersElement.innerHTML = '';
-        try {
-            const usersCollection = collection(db, 'users');
-            const querySnapshot = await getDocs(usersCollection);
-            querySnapshot.forEach(doc => {
-                const user = doc.data();
-                const userDiv = document.createElement('div');
-                userDiv.innerHTML = `
-                    <p>Email: ${user.email}</p>
-                    <p>Location: ${user.location}</p>
-                    <p>Phone Number: ${user.phone}</p>
-                    <p>Role: ${user.role}</p>
-                    <hr />
-                `;
-                allUsersElement.appendChild(userDiv);
-            });
-        } catch (error) {
-            allUsersElement.innerHTML = `<p>Error loading users: ${error.message}</p>`;
-        }
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        users.forEach(user => {
+            const userDiv = document.createElement('div');
+            userDiv.innerHTML = `
+                <p>Email: ${user.email}</p>
+                <p>Role: ${user.role}</p>
+                <hr />
+            `;
+            allUsersElement.appendChild(userDiv);
+        });
     }, 1500);
 }
 
@@ -439,11 +289,8 @@ function savePreferences() {
 }
 
 function updateMap() {
-    getUserProfile(currentUser?.email).then(profile => {
-        const location = profile?.location || 'Location Not Set';
-        document.getElementById('userLocationDisplay').innerText = location;
-    });
-    // Basic placeholder map (replace with actual map API)
+    // Replace with actual map API integration if needed
+    document.getElementById('userLocationDisplay').innerText = 'Location services are currently unavailable.';
 }
 
 function notifyUser(message) {
