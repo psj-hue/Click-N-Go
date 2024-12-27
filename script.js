@@ -98,6 +98,9 @@ function verifyOTP() {
             currentUser = newUser;
             localStorage.setItem('clickngoUser', JSON.stringify(currentUser));
             updateUIForSignedInUser(currentUser);
+            // Switch to the app section after successful OTP verification
+            toggleVisibility('otpPage', 'appSection');
+            switchSection('homeSection');
         }, 1500);
     } else {
         otpError.innerText = "Incorrect OTP. Please try again.";
@@ -119,6 +122,9 @@ async function login(event) {
         currentUser = user; // Simulate logged-in user
         localStorage.setItem('clickngoUser', JSON.stringify(currentUser));
         updateUIForSignedInUser(currentUser);
+        // Switch to the app section after successful login
+        toggleVisibility('authSection', 'appSection');
+        switchSection('homeSection');
     } else {
         loginError.innerText = 'Invalid credentials.';
     }
