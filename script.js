@@ -15,6 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
     displayWelcomeMessage();
     setInterval(updateClock, 1000);
     loadPreferences(); // Load user preferences on page load
+
+    document.getElementById('loginFormElem').addEventListener('submit', login);
+    document.getElementById('signupFormElem').addEventListener('submit', signUp);
+
+     window.showLoginForm = showLoginForm;
+     window.showSignUpForm = showSignUpForm;
+     window.verifyOTP = verifyOTP;
+     window.clearInput = clearInput;
+     window.switchSection = switchSection;
 });
 
 function updateUIForSignedInUser(user) {
@@ -427,3 +436,10 @@ function updateTracking() {
         }, 500);
     }, 2000);
 }
+
+ function showLoginForm() {
+        toggleAuth('loginForm');
+    }
+    function showSignUpForm() {
+        toggleAuth('signUpForm');
+    }
