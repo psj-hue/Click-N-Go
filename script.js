@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateClock, 1000);
 });
 
-function handleCredentialResponse(response) {
+window.handleCredentialResponse = function(response) {
     console.log("Google Credential Response:", response);
     const idToken = response.credential;
     const decodedToken = JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
@@ -79,7 +79,7 @@ function handleCredentialResponse(response) {
     localStorage.setItem('googleUser', JSON.stringify(currentUser));
     updateUIForSignedInUser(currentUser);
     // In a real application, you would likely send the idToken to your server for verification and session management.
-}
+};
 
 async function updateUIForSignedInUser(user) {
     toggleVisibility('authSection', 'appSection');
@@ -116,7 +116,7 @@ async function getUserRoleFromFirestore(email) {
     }
 }
 
-async function signUp(event) {
+window.signUp = async function(event) {
     event.preventDefault();
     const email = document.getElementById('signUpEmail').value.trim();
     const password = document.getElementById('signUpPassword').value.trim();
@@ -163,24 +163,25 @@ async function signUp(event) {
     } catch (error) {
         document.getElementById('authMessage').innerText = error.message;
     }
-}
+};
 
-async function login(event) {
+function login(event) {
     event.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
 
     // For simplicity, assuming you have a way to verify email/password (e.g., against Firestore or a backend)
     // This is a placeholder - replace with your actual authentication logic
-    const role = await getUserRoleFromFirestore(email);
-    if (role) {
-        document.getElementById('authMessage').innerText = 'Login successful!';
-        currentUser = { email: email }; // Simulate logged-in user
-        localStorage.setItem('googleUser', JSON.stringify(currentUser));
-        updateUIForSignedInUser(currentUser);
-    } else {
-        document.getElementById('authMessage').innerText = 'Invalid credentials.';
-    }
+    getUserRoleFromFirestore(email).then(role => {
+        if (role) {
+            document.getElementById('authMessage').innerText = 'Login successful!';
+            currentUser = { email: email }; // Simulate logged-in user
+            localStorage.setItem('googleUser', JSON.stringify(currentUser));
+            updateUIForSignedInUser(currentUser);
+        } else {
+            document.getElementById('authMessage').innerText = 'Invalid credentials.';
+        }
+    });
 }
 
 function populateAccountInfo(user) {
@@ -204,12 +205,6 @@ async function getUserProfile(email) {
         console.error("Error fetching user profile:", error);
         return null;
     }
-}
-
-async function getUserRole(uid) { // This is no longer directly used with Google Sign-In
-    // You might need a different way to determine the role for Google users
-    // For now, we are fetching role based on email
-    return null;
 }
 
 function logout() {
@@ -242,6 +237,12 @@ function resetApp() {
     document.querySelectorAll('.error-message').forEach(item => item.innerHTML = '');
 }
 
+window.toggleAuth = function(formId) {
+    document.getElementById('signUpForm').style.display = formId === 'signUpForm' ? 'block' : 'none';
+    document.getElementById('loginForm').style.display = formId === 'loginForm' ? 'block' : 'none';
+    document.getElementById('authMessage').innerText = '';
+};
+
 function switchSection(section) {
     document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
     const userEmail = currentUser?.email;
@@ -258,12 +259,6 @@ function switchSection(section) {
             updateMap();
         }
     });
-}
-
-function toggleAuth(formId) {
-    document.getElementById('signUpForm').style.display = formId === 'signUpForm' ? 'block' : 'none';
-    document.getElementById('loginForm').style.display = formId === 'loginForm' ? 'block' : 'none';
-    document.getElementById('authMessage').innerText = '';
 }
 
 function toggleVisibility(hideSection, showSection) {
