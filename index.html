@@ -6,6 +6,7 @@
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs REMOVED -->
 </head>
 <body>
     <div id="authSection">
@@ -16,10 +17,33 @@
                 <div class="form-group">
                     <label for="signUpEmail">Email:</label>
                     <input type="email" id="signUpEmail" required>
+                    <span class="clear-input" onclick="clearInput('signUpEmail')">X</span>
+                    <div class="error-message" id="signUpEmailError"></div>
                 </div>
                 <div class="form-group">
                     <label for="signUpPassword">Password:</label>
                     <input type="password" id="signUpPassword" required>
+                    <span class="clear-input" onclick="clearInput('signUpPassword')">X</span>
+                    <div class="error-message" id="signUpPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="signUpLocation">Location:</label>
+                    <input type="text" id="signUpLocation" placeholder="Enter your location" required>
+                    <span class="clear-input" onclick="clearInput('signUpLocation')">X</span>
+                </div>
+                <div class="form-group">
+                    <label for="signUpPhone">Phone Number:</label>
+                    <input type="tel" id="signUpPhone" placeholder="Enter your phone number" required>
+                    <span class="clear-input" onclick="clearInput('signUpPhone')">X</span>
+                    <div class="error-message" id="signUpPhoneError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="signUpRole">Role:</label>
+                    <select id="signUpRole" required>
+                        <option value="customer">Customer</option>
+                        <option value="driver">Driver</option>
+                        <option value="admin">Admin</option>
+                    </select>
                 </div>
                 <button type="submit">Sign Up</button>
             </form>
@@ -31,49 +55,79 @@
                 <div class="form-group">
                     <label for="loginEmail">Email:</label>
                     <input type="email" id="loginEmail" required>
+                    <span class="clear-input" onclick="clearInput('loginEmail')">X</span>
+                    <div class="error-message" id="loginEmailError"></div>
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Password:</label>
                     <input type="password" id="loginPassword" required>
+                    <span class="clear-input" onclick="clearInput('loginPassword')">X</span>
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe">Remember Me</label>
                 </div>
                 <button type="submit">Login</button>
             </form>
             <p>Don't have an account? <a href="#" onclick="toggleAuth('signUpForm')">Sign Up</a></p>
         </div>
+        <!-- Google Sign-In Button REMOVED -->
+        <div id="authMessage" class="auth-message"></div>
     </div>
 
-    <div id="appContent" style="display: none;">
+    <div id="otpPage" style="display: none;">
+        <h2>Verify Your OTP</h2>
+        <p id="otpMessage"></p>
+        <div class="form-group">
+            <label for="otpInput">Enter OTP:</label>
+            <input type="text" id="otpInput" placeholder="Enter OTP">
+            <span class="clear-input" onclick="clearInput('otpInput')">X</span>
+            <div class="error-message" id="otpError"></div>
+        </div>
+        <button onclick="verifyOTP()">Verify OTP</button>
+        <div id="otpStatus" class="loading-message"></div>
+    </div>
+
+    <div id="appSection" style="display: none;">
         <header>
             <h1>Click n' Go!</h1>
-            <nav>
-                <button onclick="switchSection('home')">Home</button>
-                <button onclick="switchSection('orderItems')">Orders</button>
-                <button onclick="switchSection('account')">Account</button>
-                <button onclick="switchSection('settings')">Settings</button>
-                <button onclick="switchSection('contact')">Contact</button>
-                <button onclick="switchSection('developer')">About</button>
-            </nav>
+            <p>Your Reliable Transportation & Delivery Service</p>
         </header>
 
         <section id="homeSection" class="content-section">
-            <h2>Welcome!</h2>
-            <p>Explore our services and get moving!</p>
+            <h2>Welcome, <span id="userEmailDisplay">User</span>!</h2>
+            <p id="welcomeMessage"></p>
+            <div id="clockDisplay"></div>
+            <p>Explore our services and make your life easier!</p>
+            <button onclick="switchSection('orderItemsSection')">Get Started</button>
         </section>
 
-        <section id="orderItemsSection" class="content-section" style="display: none;">
-            <h2>Order Items</h2>
-            <h3>Location</h3>
-            <h3>Order Panel</h3>
-            <p>This is where a customer can track the order</p>
-            <button onclick="simulateOrder()">Simulate Order</button>
-            <div id="trackingPanel"></div>
-            <div id="chatBox">
-                <h3>Chat with Driver</h3>
-                <div id="chatMessages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Type your message">
-                    <button onclick="sendMessage()">Send</button>
+         <section id="orderItemsSection" class="content-section" style="display: none;">
+            <h2>Delivery and Motor Service</h2>
+            <div class="facebook-link">
+                <p>Place an order on our Facebook page:</p>
+                <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank">Visit Facebook Page</a>
+            </div>
+             <div id="locationSection" >
+                <h2>Location</h2>
+                <div id="mapContainer" style="height: 300px; border: 1px solid #ccc;">
+                     <p> User Location: <span id="userLocationDisplay"></span> </p>
                 </div>
+            </div>
+            <div id="orderPanel" style="display:none;">
+                <h3>Order Panel</h3>
+                <p>This is where a customer can track the order</p>
+                <button onclick="simulateOrder()">Simulate Order</button>
+                 <div id="trackingPanel"></div>
+                   <div id="chatBox">
+                        <h3>Chat with Driver</h3>
+                        <div id="chatMessages"></div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chatInput" placeholder="Type your message">
+                            <button onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
             </div>
             <div id="orderRequestPanel" style="display:none;">
                 <h3>Order Request Panel</h3>
@@ -93,9 +147,9 @@
             <p>Location: <span id="accountLocation"></span></p>
             <p>Phone: <span id="accountPhone"></span></p>
             <p>Role: <span id="userRole"></span></p>
-            <div id="adminSection" style="margin-top:15px;">
-                <h2>Admin Panel</h2>
-                <div id="allUsers">
+              <div id="adminSection"  style="margin-top:15px;">
+                 <h2>Admin Panel</h2>
+                 <div id="allUsers">
                 </div>
             </div>
         </section>
@@ -107,47 +161,45 @@
             </div>
             <button onclick="logout()">Logout</button>
             <button onclick="deleteAccount()">Delete Account</button>
-            <button onclick="switchSection('userPreferences')">Preferences</button>
+            <button onclick="switchSection('userPreferencesSection')">Preferences</button>
         </section>
-
-        <section id="developerSection" class="content-section" style="display: none;">
+          <section id="developerSection" class="content-section" style="display: none;">
             <h2>About</h2>
             <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
             <p>Click n' Go aims to provide a quality service that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
-            <div id="faqSection" style="margin-top:15px;">
-                <h2>FAQ</h2>
-                <div id="faqList">
+                <div id="faqSection" style="margin-top:15px;">
+                 <h2>FAQ</h2>
+                  <div id="faqList">
                 </div>
-            </div>
+                 </div>
             <div id="feedbackSection" style="margin-top:15px;">
                 <h2>Feedback</h2>
-                <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                 <form id="feedbackForm" onsubmit="submitFeedback(event)">
                     <div class="form-group">
                         <label for="feedbackMessage">Message:</label>
                         <textarea id="feedbackMessage" placeholder="Enter your feedback" required></textarea>
                     </div>
-                    <button type="submit">Submit Feedback</button>
-                </form>
+                   <button type="submit">Submit Feedback</button>
+                 </form>
                 <div id="feedbackStatus" class="loading-message"></div>
-            </div>
+              </div>
             <p>Developers: Jason M. Pascual</p>
             <p>Developers: Ysabelle Homer G. Montellano</p>
         </section>
-
         <section id="userPreferencesSection" class="content-section" style="display: none;">
             <h2>Preferences</h2>
             <div class="form-group">
-                <label for="languageSelect">Language:</label>
-                <select id="languageSelect">
+                 <label for="languageSelect">Language:</label>
+                 <select id="languageSelect">
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
-                </select>
+                 </select>
             </div>
-            <button onclick="savePreferences()">Save Preferences</button>
-            <div id="userPreferencesStatus" class="loading-message"></div>
+           <button onclick="savePreferences()">Save Preferences</button>
+             <div id="userPreferencesStatus" class="loading-message"></div>
         </section>
 
-        <section id="contactSection" class="content-section" style="display: none;">
+         <section id="contactSection" class="content-section" style="display: none;">
             <h2>Contact Us</h2>
             <div class="contact-info">
                 <p>Email: <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
@@ -156,15 +208,15 @@
         </section>
 
         <nav id="bottomNav">
-            <button onclick="switchSection('home')">Home</button>
-            <button onclick="switchSection('orderItems')">Orders</button>
-            <button onclick="switchSection('account')">Account</button>
-            <button onclick="switchSection('settings')">Settings</button>
-            <button onclick="switchSection('contact')">Contact</button>
-            <button onclick="switchSection('developer')">About</button>
+            <button onclick="switchSection('homeSection')">Home</button>
+            <button onclick="switchSection('orderItemsSection')">Orders</button>
+            <button onclick="switchSection('accountSection')">Account</button>
+            <button onclick="switchSection('settingsSection')">Settings</button>
+            <button onclick="switchSection('contactSection')">Contact</button>
+            <button onclick="switchSection('developerSection')">About</button>
         </nav>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
