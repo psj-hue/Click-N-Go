@@ -1,122 +1,194 @@
-setInterval(updateClock, 1000);
+let currentUser = null; // Store the current user information
 
 document.addEventListener('DOMContentLoaded', () => {
-    const storedUser = localStorage.getItem('currentUser');
+    // Check for a previously logged-in user in local storage
+    const storedUser = localStorage.getItem('clickngoUser');
     if (storedUser) {
         currentUser = JSON.parse(storedUser);
         updateUIForSignedInUser(currentUser);
+    } else {
+        switchSection('homeSection'); // Show default home if not signed in
     }
+
     loadFaq();
-    loadPreferences();
-    updateMap();
+    updateClock();
     displayWelcomeMessage();
+    setInterval(updateClock, 1000);
+    loadPreferences(); // Load user preferences on page load
 });
 
-let currentUser = null;
-let feedbackMessages = JSON.parse(localStorage.getItem('feedbackMessages')) || [];
-const faqData = [
-    { question: "What is Click n' Go?", answer: "Click n' Go is a digital platform providing motor-taxi and delivery services." },
-    { question: "How do I book a service?", answer: "You can book a service after logging in through the 'Orders' section." },
-    { question: "Is my data safe?", answer: "We take data privacy seriously and ensure your information is protected." }
-];
-
-async function updateUIForSignedInUser(user) {
-    toggleVisibility('authSection', 'appContent');
-    document.getElementById('accountEmail').innerText = user.email;
+function updateUIForSignedInUser(user) {
+    toggleVisibility('authSection', 'appSection');
     populateAccountInfo(user);
-    // Simulate getting user role - replace with your actual logic if needed
-    const role = user.role || 'customer'; // Default to customer
-    document.getElementById('userRole').innerText = role;
-    switchSection('home'); // Show home section after login
+    displayDashboard(user.role); // Use the role stored during sign-up/login
+    updateMap();
+    // After successful sign-in, ensure the default section is visible
+    switchSection('homeSection');
 }
 
 async function signUp(event) {
     event.preventDefault();
     const email = document.getElementById('signUpEmail').value.trim();
     const password = document.getElementById('signUpPassword').value.trim();
+    const location = document.getElementById('signUpLocation').value.trim();
+    const phone = document.getElementById('signUpPhone').value.trim();
+    const role = document.getElementById('signUpRole').value;
 
     if (!isValidEmail(email)) {
-        document.getElementById('authMessage').innerText = 'Invalid email format.';
+        document.getElementById('signUpEmailError').innerText = 'Invalid Email format.';
         return;
+    } else {
+        document.getElementById('signUpEmailError').innerText = '';
     }
+
     if (password.length < 6) {
-        document.getElementById('authMessage').innerText = 'Password must be at least 6 characters.';
+        document.getElementById('signUpPasswordError').innerText = 'Password must be at least 6 characters.';
         return;
+    } else {
+        document.getElementById('signUpPasswordError').innerText = '';
+    }
+    if (!isValidPhoneNumber(phone)) {
+        document.getElementById('signUpPhoneError').innerText = 'Invalid Phone number.';
+        return;
+    } else {
+        document.getElementById('signUpPhoneError').innerText = '';
     }
 
-    const existingUsers = JSON.parse(localStorage.getItem('users')) || [];
-    if (existingUsers.find(user => user.email === email)) {
-        document.getElementById('authMessage').innerText = 'Email already in use.';
-        return;
-    }
-
-    const newUser = { email: email, password: password, role: 'customer' }; // Default role
-    existingUsers.push(newUser);
-    localStorage.setItem('users', JSON.stringify(existingUsers));
-    document.getElementById('authMessage').innerText = 'Sign up successful! Please log in.';
-    document.getElementById('signupFormElem').reset();
-    toggleAuth('loginForm');
+    const otp = generateOTP();
+    sessionStorage.setItem('signUpData', JSON.stringify({ email, password, location, phone, role, otp }));
+    document.getElementById('otpMessage').innerText = `Please enter the OTP sent to your email (for demo, it's: ${otp})`;
+    toggleVisibility('authSection', 'otpPage');
 }
 
-function login(event) {
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+}
+
+function verifyOTP() {
+    const enteredOTP = document.getElementById('otpInput').value.trim();
+    const otpError = document.getElementById('otpError');
+    const otpStatus = document.getElementById('otpStatus');
+    const signUpData = JSON.parse(sessionStorage.getItem('signUpData'));
+
+    if (!signUpData || enteredOTP === "") {
+        otpError.innerText = "Invalid OTP or sign-up process incomplete.";
+        return;
+    }
+
+    if (parseInt(enteredOTP) === signUpData.otp) {
+        otpStatus.innerText = 'Verifying OTP...';
+        otpStatus.classList.add('loading');
+
+        setTimeout(() => {
+            otpStatus.classList.remove('loading');
+            // Store user data in local storage
+            let users = JSON.parse(localStorage.getItem('clickngoUsers')) || [];
+            const newUser = {
+                email: signUpData.email,
+                password: signUpData.password,
+                location: signUpData.location,
+                phone: signUpData.phone,
+                role: signUpData.role
+            };
+            users.push(newUser);
+            localStorage.setItem('clickngoUsers', JSON.stringify(users));
+
+            otpStatus.innerText = 'OTP Verified! Registration successful.';
+            sessionStorage.removeItem('signUpData');
+            currentUser = newUser;
+            localStorage.setItem('clickngoUser', JSON.stringify(currentUser));
+            updateUIForSignedInUser(currentUser);
+        }, 1500);
+    } else {
+        otpError.innerText = "Incorrect OTP. Please try again.";
+    }
+}
+
+async function login(event) {
     event.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
+    const loginError = document.getElementById('loginEmailError'); // Using email error for simplicity
 
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(u => u.email === email && u.password === password);
+    // Retrieve users from local storage
+    const users = JSON.parse(localStorage.getItem('clickngoUsers')) || [];
+    const user = users.find(user => user.email === email && user.password === password);
 
     if (user) {
         document.getElementById('authMessage').innerText = 'Login successful!';
-        currentUser = { email: user.email, role: user.role };
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        currentUser = user; // Simulate logged-in user
+        localStorage.setItem('clickngoUser', JSON.stringify(currentUser));
         updateUIForSignedInUser(currentUser);
     } else {
-        document.getElementById('authMessage').innerText = 'Invalid credentials.';
+        loginError.innerText = 'Invalid credentials.';
     }
 }
 
 function populateAccountInfo(user) {
-    document.getElementById('accountEmail').innerText = user.email;
-    // You might want to store and retrieve additional account info in local storage
-    // For now, these are placeholders
-    document.getElementById('accountLocation').innerText = 'Not Set';
-    document.getElementById('accountPhone').innerText = 'Not Set';
-}
-
-function logout() {
-    localStorage.removeItem('currentUser');
-    currentUser = null;
-    toggleVisibility('appContent', 'authSection');
-    document.getElementById('authMessage').innerText = 'Logged out successfully.';
-}
-
-function deleteAccount() {
-    const confirmDelete = confirm("Are you sure you want to delete your account?");
-    if (confirmDelete) {
-        const users = JSON.parse(localStorage.getItem('users')) || [];
-        const updatedUsers = users.filter(user => user.email !== currentUser.email);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
-        localStorage.removeItem('currentUser');
-        currentUser = null;
-        toggleVisibility('appContent', 'authSection');
-        document.getElementById('authMessage').innerText = 'Account deleted successfully.';
+    document.getElementById('accountEmail').innerText = user.email || "Not Provided";
+    document.getElementById('userEmailDisplay').innerText = user.email || "User";
+    document.getElementById('accountLocation').innerText = user.location || "Not Provided";
+    document.getElementById('accountPhone').innerText = user.phone || "Not Provided";
+    document.getElementById('userRole').innerText = user.role || "Not Provided";
+    if (user.role === 'admin') {
+        loadAllUsers();
     }
 }
 
-function clearErrors() {
+async function getUserProfile(email) {
+    const users = JSON.parse(localStorage.getItem('clickngoUsers')) || [];
+    return users.find(user => user.email === email);
+}
+
+function logout() {
+    localStorage.removeItem('clickngoUser');
+    currentUser = null;
+    document.getElementById('authMessage').innerText = 'Logged out successfully!';
+    resetApp();
+    switchSection('homeSection'); // Go back to the home/auth section
+}
+
+function deleteAccount() {
+    const userEmail = currentUser?.email;
+    if (userEmail && confirm('Are you sure you want to delete your account?')) {
+        let users = JSON.parse(localStorage.getItem('clickngoUsers')) || [];
+        users = users.filter(user => user.email !== userEmail);
+        localStorage.setItem('clickngoUsers', JSON.stringify(users));
+        document.getElementById('authMessage').innerText = 'Account deleted!';
+        logout(); // Also log out after deleting
+    }
+}
+
+function resetApp() {
+    document.getElementById('signupFormElem').reset();
+    document.getElementById('loginFormElem').reset();
+    toggleVisibility('appSection', 'authSection');
     document.querySelectorAll('.error-message').forEach(item => item.innerHTML = '');
+}
+
+function switchSection(sectionId) {
+    document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
+    if (sectionId === 'accountSection' && currentUser?.role === 'admin') {
+        document.getElementById('adminSection').style.display = 'block';
+        loadAllUsers();
+    } else {
+        document.getElementById('adminSection').style.display = 'none';
+    }
+    document.getElementById(sectionId).style.display = 'block';
+    document.getElementById('authMessage').innerText = '';
+    if (sectionId === 'orderItemsSection') {
+        updateMap();
+    }
 }
 
 function toggleAuth(formId) {
     document.getElementById('signUpForm').style.display = formId === 'signUpForm' ? 'block' : 'none';
     document.getElementById('loginForm').style.display = formId === 'loginForm' ? 'block' : 'none';
     document.getElementById('authMessage').innerText = '';
-}
-
-function switchSection(section) {
-    document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
-    document.getElementById(`${section}Section`).style.display = 'block';
+    document.getElementById('loginEmailError').innerText = ''; // Clear login error when toggling
+    document.getElementById('signUpEmailError').innerText = ''; // Clear signup error when toggling
+    document.getElementById('signUpPasswordError').innerText = '';
+    document.getElementById('signUpPhoneError').innerText = '';
 }
 
 function toggleVisibility(hideSection, showSection) {
@@ -147,11 +219,13 @@ async function loadAllUsers() {
     allUsersElement.innerHTML = '<div class="loading-message loading">Loading users...</div>';
     setTimeout(async () => {
         allUsersElement.innerHTML = '';
-        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const users = JSON.parse(localStorage.getItem('clickngoUsers')) || [];
         users.forEach(user => {
             const userDiv = document.createElement('div');
             userDiv.innerHTML = `
                 <p>Email: ${user.email}</p>
+                <p>Location: ${user.location}</p>
+                <p>Phone Number: ${user.phone}</p>
                 <p>Role: ${user.role}</p>
                 <hr />
             `;
@@ -185,6 +259,10 @@ function displayWelcomeMessage() {
 
 function clearInput(inputId) {
     document.getElementById(inputId).value = '';
+    const errorElement = document.getElementById(inputId + 'Error');
+    if (errorElement) {
+        errorElement.innerText = '';
+    }
 }
 
 function displayDashboard(role) {
@@ -205,6 +283,7 @@ function submitFeedback(event) {
     feedbackStatus.classList.add('loading');
     feedbackStatus.innerText = 'Sending feedback...';
     setTimeout(() => {
+        const feedbackMessages = JSON.parse(localStorage.getItem('feedbackMessages')) || [];
         feedbackMessages.push({
             user: currentUser.email,
             message: feedbackMessage
@@ -218,7 +297,7 @@ function submitFeedback(event) {
 }
 
 function showOrderHistory() {
-    switchSection('orderHistory');
+    switchSection('orderHistorySection');
     const orders = JSON.parse(localStorage.getItem('orders')) || [];
     const orderList = document.getElementById('orderList');
     orderList.innerHTML = '';
@@ -255,6 +334,20 @@ function simulateOrder() {
 function loadFaq() {
     const faqListElement = document.getElementById('faqList');
     faqListElement.innerHTML = '';
+    const faqData = [
+        {
+            question: "What services do you provide?",
+            answer: "We provide 12-hour motor-taxi and delivery services."
+        },
+        {
+            question: "How can I place an order?",
+            answer: "You can place an order through our Facebook page."
+        },
+        {
+            question: "How do I contact support?",
+            answer: "You can email us at clickngoservice@gmail.com or call us at 09165540988."
+        }
+    ];
     faqData.forEach(faq => {
         const faqElement = document.createElement('div');
         faqElement.innerHTML = `
@@ -289,8 +382,9 @@ function savePreferences() {
 }
 
 function updateMap() {
-    // Replace with actual map API integration if needed
-    document.getElementById('userLocationDisplay').innerText = 'Location services are currently unavailable.';
+    const location = currentUser?.location || 'Location Not Set';
+    document.getElementById('userLocationDisplay').innerText = location;
+    // Basic placeholder map (replace with actual map API)
 }
 
 function notifyUser(message) {
