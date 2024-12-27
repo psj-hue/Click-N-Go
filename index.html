@@ -7,6 +7,22 @@
     <title>Click n' Go! - Transportation & Delivery Service</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Include Google Identity Services Library -->
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <script>
+        function handleCredentialResponse(response) {
+            console.log("Google Credential Response:");
+            console.log(response.credential);
+
+            const idToken = response.credential;
+            const decodedToken = JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            console.log("Decoded ID Token:", decodedToken);
+
+            alert("Google Sign-in Successful!\n\nUser: " + decodedToken.name + "\nEmail: " + decodedToken.email);
+            // In a real application, you would likely send this ID token to your server
+            // for verification and session creation.
+        }
+    </script>
 </head>
 
 <body>
@@ -72,6 +88,23 @@
                 <button type="submit">Login</button>
             </form>
             <p>Don't have an account? <a href="#" onclick="toggleAuth('signUpForm')">Sign Up</a></p>
+        </div>
+        <!-- Google Sign-In Button -->
+        <div id="g_id_onload"
+             data-client_id="735535160092-mrurmqhnrjmrp6kb6tokrj5ob5d134hp.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="sign_in_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
         </div>
         <div id="authMessage" class="auth-message"></div>
     </div>
@@ -140,7 +173,6 @@
             <h2>Order History</h2>
             <div id="orderList"></div>
         </section>
-
 
         <section id="accountSection" class="content-section" style="display: none;">
             <h2>My Account</h2>
