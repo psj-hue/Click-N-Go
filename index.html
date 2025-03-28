@@ -3,222 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click n' Go! - Transportation & Delivery Service</title>
+    <title>Click n' Go! - Transportation & Delivery</title>
+    <!-- Link the CSS file -->
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  
+    <!-- Favicon links (optional) -->
+    <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
+    <!-- <link rel="icon" href="/favicon.svg" type="image/svg+xml"> -->
 </head>
 <body>
-    <div id="authSection">
+
+    <!-- Authentication Section -->
+    <main id="authSection" style="display: block;"> <!-- Show Auth section by default -->
         <h1>Welcome to Click n' Go!</h1>
-        <div id="signUpForm">
+
+        <!-- Sign Up Form (for local email/pass - insecure) -->
+        <div id="signUpForm" style="display: none;"> <!-- Hidden initially -->
             <h2>Sign Up</h2>
-            <form id="signupFormElem">
-                <div class="form-group">
+            <form id="signupFormElem" novalidate>
+                 <div class="form-group">
                     <label for="signUpEmail">Email:</label>
-                    <input type="email" id="signUpEmail" required>
+                    <input type="email" id="signUpEmail" required autocomplete="email">
                     <span class="clear-input" onclick="clearInput('signUpEmail')">X</span>
                     <div class="error-message" id="signUpEmailError"></div>
                 </div>
                 <div class="form-group">
                     <label for="signUpPassword">Password:</label>
-                    <input type="password" id="signUpPassword" required>
+                    <input type="password" id="signUpPassword" required minlength="6" autocomplete="new-password">
                     <span class="clear-input" onclick="clearInput('signUpPassword')">X</span>
                     <div class="error-message" id="signUpPasswordError"></div>
                 </div>
-                <div class="form-group">
-                    <label for="signUpLocation">Location:</label>
-                    <input type="text" id="signUpLocation" placeholder="Enter your location" required>
-                    <span class="clear-input" onclick="clearInput('signUpLocation')">X</span>
-                </div>
-                <div class="form-group">
+                 <div class="form-group">
+                     <label for="signUpLocation">Location:</label>
+                     <input type="text" id="signUpLocation" placeholder="e.g., Your City, Barangay" required>
+                     <span class="clear-input" onclick="clearInput('signUpLocation')">X</span>
+                      <div class="error-message" id="signUpLocationError"></div>
+                 </div>
+                 <div class="form-group">
                     <label for="signUpPhone">Phone Number:</label>
-                    <input type="tel" id="signUpPhone" placeholder="Enter your phone number" required>
+                    <input type="tel" id="signUpPhone" placeholder="e.g., 09123456789" required autocomplete="tel">
                     <span class="clear-input" onclick="clearInput('signUpPhone')">X</span>
                     <div class="error-message" id="signUpPhoneError"></div>
-                </div>
-                <div class="form-group">
-                    <label for="signUpRole">Role:</label>
-                    <select id="signUpRole" required>
-                        <option value="customer">Customer</option>
-                        <option value="driver">Driver</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
+                 </div>
+                 <div class="form-group">
+                     <label for="signUpRole">I am a:</label>
+                     <select id="signUpRole" required>
+                         <option value="" disabled selected>Select Role...</option>
+                         <option value="customer">Customer</option>
+                         <option value="driver">Driver</option>
+                         <option value="admin">Admin</option>
+                     </select>
+                     <div class="error-message" id="signUpRoleError"></div>
+                 </div>
                 <button type="submit">Sign Up</button>
             </form>
-            <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
+            <p>Already have an account? <a href="#" onclick="event.preventDefault(); showLoginForm();">Login</a></p>
         </div>
-        <div id="loginForm" style="display: none;">
+
+        <!-- Login Form (for local email/pass - insecure) -->
+        <div id="loginForm"> <!-- Show Login form initially -->
             <h2>Login</h2>
-            <form id="loginFormElem">
-                <div class="form-group">
-                    <label for="loginEmail">Email:</label>
-                    <input type="email" id="loginEmail" required>
-                    <span class="clear-input" onclick="clearInput('loginEmail')">X</span>
-                    <div class="error-message" id="loginEmailError"></div>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password:</label>
-                    <input type="password" id="loginPassword" required>
-                    <span class="clear-input" onclick="clearInput('loginPassword')">X</span>
-                    <div class="error-message" id="loginPasswordError"></div>
-                </div>
-                <div class="form-group">
-                    <input type="checkbox" id="rememberMe">
-                    <label for="rememberMe">Remember Me</label>
-                </div>
+            <form id="loginFormElem" novalidate>
+                 <div class="form-group">
+                     <label for="loginEmail">Email:</label>
+                     <input type="email" id="loginEmail" required autocomplete="email">
+                     <span class="clear-input" onclick="clearInput('loginEmail')">X</span>
+                     <div class="error-message" id="loginEmailError"></div>
+                 </div>
+                 <div class="form-group">
+                     <label for="loginPassword">Password:</label>
+                     <input type="password" id="loginPassword" required autocomplete="current-password">
+                     <span class="clear-input" onclick="clearInput('loginPassword')">X</span>
+                     <div class="error-message" id="loginPasswordError"></div>
+                 </div>
+                <div class="error-message" id="loginError"></div> <!-- General login error -->
                 <button type="submit">Login</button>
             </form>
-            <p>Don't have an account? <a href="#" onclick="showSignUpForm()">Sign Up</a></p>
+            <p>Don't have an account? <a href="#" onclick="event.preventDefault(); showSignUpForm();">Sign Up</a></p>
         </div>
-        <button id="googleSignInButton">Sign in with Google</button>
-        <div id="authMessage" class="auth-message"></div>
-    </div>
 
-    <div id="otpPage" style="display: none;">
-        <h2>Verify Your OTP</h2>
-        <p id="otpMessage">Please verify your OTP.</p>
+        <hr style="margin: 20px 0; border-top: 1px solid #eee;">
+
+        <!-- REAL Google Sign-In Button (Uses Firebase Auth) -->
+        <button id="googleSignInButton" onclick="signInWithGoogleFirebase()" style="background-color: #4285F4;" title="Sign in using your Google Account">
+             <!-- Optional: Add your own Google logo SVG/Image here if desired -->
+             <!-- <img src="google-logo.svg" alt="" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;"> -->
+             Sign in with Google
+        </button>
+         <p style="font-size: 0.8em; color: #666;">(Secure sign-in provided by Google)</p>
+
+        <!-- General Authentication Status Message Area -->
+        <div id="authMessage" class="status-message"></div>
+    </main>
+
+    <!-- OTP Verification Page (Used ONLY for insecure local email/pass signup) -->
+    <div id="otpPage" style="display: none;" class="centered-page">
+        <h2>Verify Your Account</h2>
+        <p id="otpMessage">Enter the 6-digit code sent to your email.</p>
         <div class="form-group">
-            <label for="otpInput">Enter OTP:</label>
-            <input type="text" id="otpInput" placeholder="Enter OTP">
+            <label for="otpInput">OTP Code:</label>
+            <input type="text" id="otpInput" placeholder="XXXXXX" pattern="\d{6}" maxlength="6" inputmode="numeric" required>
             <span class="clear-input" onclick="clearInput('otpInput')">X</span>
             <div class="error-message" id="otpError"></div>
         </div>
         <button onclick="verifyOTP()">Verify OTP</button>
-        <div id="otpStatus" class="loading-message"></div>
+        <div id="otpStatus" class="status-message loading-message"></div>
     </div>
 
-    <div id="appSection" style="display: none;">
+    <!-- Main Application Section (Shown After Successful Login/Signup) -->
+    <div id="appSection" style="display: none;"> <!-- Hidden initially -->
+
         <header>
-            <h1>Click n' Go!</h1>
-            <p>Your Reliable Transportation & Delivery Service</p>
+             <h1>Click n' Go!</h1>
+             <p id="welcomeMessage">Welcome!</p>
+             <!-- Live clock display -->
+             <div id="clockDisplay" aria-live="polite">--:--:--</div>
         </header>
 
-        <section id="homeSection" class="content-section">
-            <h2>Welcome, <span id="userEmailDisplay">User</span>!</h2>
-            <p id="welcomeMessage"></p>
-            <div id="clockDisplay"></div>
-            <p>Explore our services and make your life easier!</p>
-            <button onclick="switchSection('orderItemsSection')">Get Started</button>
-        </section>
+        <!-- Main content area where different sections are displayed -->
+        <main id="appContent">
 
-        <section id="orderItemsSection" class="content-section">
-            <h2>Delivery and Motor Service</h2>
-            <div class="facebook-link">
-                <p>Place an order on our Facebook page:</p>
-                <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank">Visit Facebook Page</a>
-            </div>
-            <div id="locationSection" >
-                <h2>Your Location</h2>
-                <div id="mapContainer">
-                    <p> User Location: <span id="userLocationDisplay"></span> </p>
+            <!-- Home Section -->
+            <section id="homeSection" class="content-section">
+                <h2>Hello, <span id="userEmailDisplay">User</span>!</h2>
+                <p>Your reliable ride and delivery partner. What can we help you with today?</p>
+                <div class="quick-actions">
+                    <button onclick="switchSection('orderItemsSection')">Place/View Order</button>
+                    <button onclick="switchSection('contactSection')">Contact Support</button>
                 </div>
-            </div>
-            <div id="orderPanel">
-                <h3>Order Panel</h3>
-                <p>This is where a customer can track the order</p>
-                <button onclick="simulateOrder()">Simulate Order</button>
-                <div id="trackingPanel"></div>
-                <div id="chatBox">
-                    <h3>Chat with Driver</h3>
-                    <div id="chatMessages"></div>
+                <!-- Small map preview for Home -->
+                <div id="homeMapPreview" class="map-container-small">
+                     <p>Current Location Area: <span id="userLocationDisplayHome">Fetching...</span></p>
+                     <div id="mapPlaceholderSmall">(Map preview placeholder)</div>
+                </div>
+            </section>
+
+            <!-- Order Items / Service Section -->
+            <section id="orderItemsSection" class="content-section" style="display: none;">
+                 <h2>Ride & Delivery</h2>
+
+                 <!-- Customer-Specific Panel -->
+                <div id="orderPanel" style="display: none;">
+                    <h3>Place & Track Orders</h3>
+                     <!-- Link to Facebook for booking -->
+                     <div class="facebook-link">
+                         <p>Need a ride or delivery?</p>
+                         <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank" rel="noopener noreferrer" class="button-link">Book on Facebook Now</a>
+                          <p><small>(In-app booking coming soon!)</small></p>
+                      </div>
+                      <hr style="margin: 20px 0;">
+                      <h4>Live Order Tracking (Demo)</h4>
+                      <!-- Button to trigger simulated order -->
+                      <button onclick="simulateOrder()" class="inline">Place Simulated Order</button>
+                     <!-- Area where tracking updates will appear -->
+                     <div id="trackingPanel" class="tracking-area" aria-live="polite">
+                         <p>Place an order to see tracking information.</p>
+                     </div>
+                 </div>
+
+                 <!-- Driver-Specific Panel -->
+                <div id="orderRequestPanel" style="display: none;">
+                     <h3>Incoming Requests</h3>
+                     <!-- Placeholder for where driver requests would show -->
+                     <div id="driverRequestsList">
+                        <p>(No current requests)</p>
+                     </div>
+                 </div>
+
+                 <!-- Common Elements for this section -->
+                 <!-- Location display and map placeholder -->
+                <div id="locationSection" style="margin-top: 20px;">
+                    <h4>Your Estimated Location</h4>
+                    <p><span id="userLocationDisplay">Not Set</span></p>
+                    <div id="mapPlaceholder" class="map-container">(Map placeholder - Integration required)</div>
+                </div>
+                <!-- Demo Chat Interface -->
+                <div id="chatBox" style="margin-top: 20px;">
+                    <h3>Chat (Demo)</h3>
+                    <div id="chatMessages" class="chat-messages-area"><!-- Messages appear here --></div>
                     <div class="chat-input-area">
-                        <input type="text" id="chatInput" placeholder="Type your message">
+                        <input type="text" id="chatInput" placeholder="Type message...">
                         <button onclick="sendMessage()">Send</button>
                     </div>
+                 </div>
+                 <!-- Button to navigate to order history -->
+                 <button onclick="showOrderHistory()" class="secondary-action" style="margin-top: 20px;">View Order History</button>
+            </section>
+
+            <!-- Order History Section -->
+            <section id="orderHistorySection" class="content-section" style="display: none;">
+                <h2>Order History</h2>
+                <!-- List where past orders will be displayed -->
+                <div id="orderList">
+                    <div class="loading-message">Loading history...</div>
                 </div>
-            </div>
-            <div id="orderRequestPanel">
-                <h3>Order Request Panel</h3>
-                <p>This is where the driver can see all order requests</p>
-            </div>
-            <button onclick="showOrderHistory()">Show Order History</button>
-        </section>
+            </section>
 
-        <section id="orderHistorySection" class="content-section">
-            <h2>Order History</h2>
-            <div id="orderList"></div>
-        </section>
-
-        <section id="accountSection" class="content-section">
-            <h2>My Account</h2>
-            <p>Email: <span id="accountEmail"></span></p>
-            <p>Location: <span id="accountLocation"></span></p>
-            <p>Phone: <span id="accountPhone"></span></p>
-            <p>Role: <span id="userRole"></span></p>
-            <div id="adminSection">
-                <h2>Admin Panel</h2>
-                <div id="allUsers">
+            <!-- Account Info Section -->
+            <section id="accountSection" class="content-section" style="display: none;">
+                <h2>My Account</h2>
+                <!-- Display user details -->
+                <div class="account-details">
+                    <p><strong>Email:</strong> <span id="accountEmail">...</span></p>
+                    <p><strong>Name:</strong> <span id="accountName">...</span></p>
+                    <p><strong>Default Location:</strong> <span id="accountLocation">...</span></p>
+                    <p><strong>Phone:</strong> <span id="accountPhone">...</span></p>
+                    <p><strong>Role:</strong> <span id="userRole">...</span></p>
+                    <p><strong>User ID:</strong> <span id="accountUid" style="font-size: 0.8em; color: #888;">...</span></p>
                 </div>
-            </div>
-        </section>
-
-        <section id="settingsSection" class="content-section">
-            <h2>Settings</h2>
-            <div id="toggleDarkMode">
-                <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
-            </div>
-            <button onclick="logout()">Logout</button>
-            <button onclick="deleteAccount()">Delete Account</button>
-            <button onclick="switchSection('userPreferencesSection')">Preferences</button>
-        </section>
-
-        <section id="developerSection" class="content-section">
-            <h2>About</h2>
-            <p>Click n' Go, a digital platform that provides a 12-hour motor-taxi and delivery services. In today's world where the society is getting busy, Click n' Go is here to make your life convenient. </p>
-            <p>Click n' Go aims to provide a quality service that will satisfy the needs of the customer— transportation and delivery services. We assure that Click n' Go is safe, affordable, fast, and easy to use.</p>
-            <div id="faqSection">
-                <h2>FAQ</h2>
-                <div id="faqList">
-                </div>
-            </div>
-            <div id="feedbackSection">
-                <h2>Feedback</h2>
-                <form id="feedbackForm">
-                    <div class="form-group">
-                        <label for="feedbackMessage">Message:</label>
-                        <textarea id="feedbackMessage" placeholder="Enter your feedback" required></textarea>
+                <!-- Admin-Specific Panel -->
+                <div id="adminSection" style="display: none;">
+                    <h3>Admin Panel: Registered Users</h3>
+                    <!-- List where admin can see users -->
+                    <div id="allUsers" class="user-list">
+                        <div class="loading-message">Loading users...</div>
                     </div>
-                    <button type="submit">Submit Feedback</button>
-                </form>
-                <div id="feedbackStatus" class="loading-message"></div>
-            </div>
-            <p>Developers: Jason M. Pascual</p>
-            <p>Developers: Ysabelle Homer G. Montellano</p>
-        </section>
+                </div>
+                 <!-- Logout Button (uses Firebase Logout) -->
+                <button onclick="logoutFirebase()" class="button-danger" style="margin-top: 20px;">Logout</button>
+            </section>
 
-         <section id="userPreferencesSection" class="content-section">
-            <h2>Preferences</h2>
-            <div class="form-group">
-                 <label for="languageSelect">Language:</label>
-                 <select id="languageSelect">
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                 </select>
-            </div>
-           <button onclick="savePreferences()">Save Preferences</button>
-             <div id="userPreferencesStatus" class="loading-message"></div>
-        </section>
+            <!-- Settings Section -->
+            <section id="settingsSection" class="content-section" style="display: none;">
+                <h2>Settings</h2>
+                <div class="settings-options">
+                     <!-- Dark Mode Toggle -->
+                     <div class="form-group">
+                         <label for="darkModeToggle">
+                            <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                             Dark Mode
+                        </label>
+                     </div>
+                     <!-- Link to Preferences sub-section -->
+                     <button onclick="switchSection('userPreferencesSection')">Language Preferences</button>
+                     <!-- Delete Account Button -->
+                    <button onclick="deleteAccount()" class="button-danger">Delete My Account</button>
+                    <!-- Logout Button (uses Firebase Logout) -->
+                    <button onclick="logoutFirebase()" class="button-danger" style="margin-top: 20px;">Logout</button>
+                </div>
+            </section>
 
-        <section id="contactSection" class="content-section">
-            <h2>Contact Us</h2>
-            <div class="contact-info">
-                <p>Email: <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
-                <p>Contact Number: 09165540988</p>
-            </div>
-        </section>
+             <!-- User Preferences Sub-Section (for language, etc.) -->
+            <section id="userPreferencesSection" class="content-section" style="display: none;">
+                 <h2>User Preferences</h2>
+                 <div class="form-group">
+                     <label for="languageSelect">Interface Language:</label>
+                     <select id="languageSelect">
+                         <option value="en">English</option>
+                         <option value="tl">Tagalog</option>
+                         <!-- Example of a disabled option -->
+                         <option value="es" disabled>Spanish (Coming Soon)</option>
+                     </select>
+                 </div>
+                 <!-- Save Preferences Button -->
+                 <button onclick="savePreferences()">Save Preferences</button>
+                 <!-- Status message area for saving -->
+                 <div id="userPreferencesStatus" class="status-message loading-message"></div>
+             </section>
 
+            <!-- Contact Us Section -->
+            <section id="contactSection" class="content-section" style="display: none;">
+                 <h2>Contact Us</h2>
+                 <p>Need help? Reach out to us!</p>
+                 <div class="contact-info">
+                     <p><strong>Email:</strong> <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
+                     <p><strong>Phone / SMS:</strong> <a href="tel:09165540988">0916 554 0988</a></p>
+                     <p><strong>Facebook:</strong> <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank" rel="noopener noreferrer">Click n' Go Page</a></p>
+                 </div>
+            </section>
+
+            <!-- About / Developer Info Section -->
+            <section id="developerSection" class="content-section" style="display: none;">
+                <h2>About Click n' Go!</h2>
+                <p>Click n' Go provides reliable 12-hour motor-taxi and delivery services designed for your convenience in a busy world. We prioritize safety, affordability, speed, and ease of use.</p>
+                <hr>
+                <!-- FAQ Area -->
+                <div id="faqSection">
+                    <h3>Frequently Asked Questions</h3>
+                    <!-- Ensure this container for FAQs exists -->
+                    <div id="faqList">
+                        <div class="loading-message">Loading FAQs...</div>
+                    </div>
+                </div>
+                <hr>
+                <!-- Feedback Form Area -->
+                <div id="feedbackSection">
+                    <h3>Send Us Feedback</h3>
+                    <form id="feedbackForm" novalidate>
+                        <div class="form-group">
+                            <label for="feedbackMessage">Your Message:</label>
+                            <textarea id="feedbackMessage" placeholder="How can we improve?" required rows="4"></textarea>
+                        </div>
+                        <button type="submit">Submit Feedback</button>
+                    </form>
+                    <!-- Status message for feedback submission -->
+                    <div id="feedbackStatus" class="status-message loading-message"></div>
+                </div>
+                <hr>
+                 <!-- Developer credits -->
+                 <div class="developer-info" style="margin-top: 20px; font-size: 0.9em; text-align: center;">
+                    <p>Developed by:<br> Jason M. Pascual<br> Ysabelle Homer G. Montellano</p>
+                 </div>
+            </section>
+
+        </main> <!-- End Main App Content -->
+
+        <!-- Bottom Navigation Bar -->
         <nav id="bottomNav">
-            <button onclick="switchSection('homeSection')">Home</button>
-            <button onclick="switchSection('orderItemsSection')">Orders</button>
-            <button onclick="switchSection('accountSection')">Account</button>
-            <button onclick="switchSection('settingsSection')">Settings</button>
-             <button onclick="switchSection('contactSection')">Contact</button>
-            <button onclick="switchSection('developerSection')">About</button>
+             <button onclick="switchSection('homeSection')" aria-label="Home" class="active"><span class="nav-icon">🏠</span> Home</button>
+             <button onclick="switchSection('orderItemsSection')" aria-label="Orders"><span class="nav-icon">📦</span> Orders</button>
+             <button onclick="switchSection('accountSection')" aria-label="Account"><span class="nav-icon">👤</span> Account</button>
+             <button onclick="switchSection('settingsSection')" aria-label="Settings"><span class="nav-icon">⚙️</span> Settings</button>
+             <button onclick="switchSection('contactSection')" aria-label="Contact"><span class="nav-icon">📞</span> Contact</button>
+             <button onclick="switchSection('developerSection')" aria-label="About"><span class="nav-icon">ℹ️</span> About</button>
         </nav>
-    </div>
 
-     <script src="script.js"></script>
+    </div> <!-- End App Section -->
+
+    <!-- *** Load JavaScript file AS A MODULE at the VERY END of the body *** -->
+    <script type="module" src="script.js"></script>
+
 </body>
 </html>
