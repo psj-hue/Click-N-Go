@@ -1,10 +1,13 @@
-/* General Styles */
+/* ----------------------------- */
+/* --- General & Body Styles --- */
+/* ----------------------------- */
+
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #ffd700;
-    color: #000000;
+    background-color: #ffd700; /* Main yellow background */
+    color: #000000; /* Default text color */
     margin: 0;
-    padding: 0;
+    padding: 20px 20px 100px 20px; /* Added bottom padding for nav clearance */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -13,28 +16,24 @@ body {
     text-align: center;
     overflow-x: hidden;
     position: relative;
+    box-sizing: border-box;
     transition: background-color 0.3s ease, color 0.3s ease;
+
+    /* Retaining original background effects */
      background-image:
         repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 0, 0, 0.03) 1px, rgba(0, 0, 0, 0.03) 2px),
         repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0, 0, 0, 0.03) 1px, rgba(0, 0, 0, 0.03) 2px),
-        linear-gradient(to right,
-            rgba(0, 0, 0, 0.02) 10px,
-            transparent 10px),
-        linear-gradient(to bottom,
-            rgba(0, 0, 0, 0.02) 10px,
-            transparent 10px);
+        linear-gradient(to right, rgba(0, 0, 0, 0.02) 10px, transparent 10px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.02) 10px, transparent 10px);
     background-size: 100px 100px, 100px 100px, 100px 100px, 100px 100px;
     background-blend-mode: overlay;
 }
 
-/* Background Art */
 body::before {
     content: '';
     position: absolute;
-    top: -10%;
-    left: -10%;
-    width: 120%;
-    height: 120%;
+    top: -10%; left: -10%;
+    width: 120%; height: 120%;
     background-image: radial-gradient(circle at 20% 20%, #ffc107 0%, rgba(255, 255, 255, 0) 30%),
         radial-gradient(circle at 80% 80%, #4caf50 0%, rgba(255, 255, 255, 0) 30%),
         radial-gradient(circle at 20% 80%, #2196f3 0%, rgba(255, 255, 255, 0) 30%),
@@ -45,181 +44,507 @@ body::before {
     transition: opacity 0.3s ease;
 }
 
-/* Headers and Text */
-h1,
-h2,
-label,
-p {
-    color: #000000;
-    margin: 10px 0;
-    transition: color 0.3s ease;
-    line-height: 1.6; /* Improved line height */
-}
+/* ----------------------------- */
+/* --- Typography --- */
+/* ----------------------------- */
 
-/* Bolded Text for Key Information */
-h1,
-h2 {
-    font-weight: bold;
-    letter-spacing: 0.5px; /* Slight letter spacing */
-}
-
-#contactSection h2,
-#trackingStatus,
-#userEmail,
-#userRole {
-    font-weight: bold;
+h1, h2, h3, h4 {
+    color: #000000; /* Consistent black for headers */
+    margin: 1em 0 0.5em 0;
+    font-weight: 700;
     letter-spacing: 0.5px;
+    transition: color 0.3s ease;
 }
 
-/* Auth Section */
-#authSection {
-    width: 100%;
-    max-width: 450px;
-    padding: 30px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Slightly larger shadow */
-    text-align: center;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    margin: 20px; /* Add margin */
+p, label {
+    color: #333; /* Slightly softer black for paragraphs/labels */
+    margin: 0.5em 0;
+    line-height: 1.6;
+    transition: color 0.3s ease;
 }
+
+a {
+    color: #1a73e8; /* Standard link blue */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #1256a0;
+    text-decoration: underline;
+}
+
+/* ----------------------------- */
+/* --- Containers & Layout --- */
+/* ----------------------------- */
+
+#authSection,
+#appSection,
+#otpPage {
+    width: 100%;
+    max-width: 500px; /* Slightly increase max-width */
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+    margin: 20px auto; /* Center containers */
+    box-sizing: border-box;
+}
+
+#otpPage {
+    max-width: 400px; /* OTP page can be narrower */
+}
+
+#appSection {
+     max-width: 600px; /* App section can be a bit wider */
+}
+
+header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+main#appContent {
+     /* Wrapper for sections inside app */
+    padding: 0;
+    margin: 0;
+}
+
+/* Content Sections Styling */
+.content-section {
+    display: none; /* Controlled by JS */
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #fff; /* White background for sections */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: left; /* Default to left-align inside sections */
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Center content specifically for home section if desired */
+#homeSection {
+    text-align: center;
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ----------------------------- */
+/* --- Forms & Inputs --- */
+/* ----------------------------- */
 
 form {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     text-align: left;
 }
 
-input,
+.form-group {
+    margin-bottom: 20px;
+    position: relative; /* Needed for absolute positioning of clear button */
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #111; /* Darker label color */
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
 select,
-button,
 textarea {
     width: 100%;
-    padding: 14px;
-    margin: 10px 0;
-    border: 2px solid #ddd;
+    padding: 12px 15px; /* Adjusted padding */
+    margin: 0; /* Removed default margin */
+    border: 1px solid #ccc; /* Thinner border */
     border-radius: 8px;
     font-size: 16px;
     box-sizing: border-box;
-    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    background-color: #f8f9fa;
+    color: #333;
+    transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
+input::placeholder, textarea::placeholder {
+    color: #888;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #2d6a4f; /* Highlight with primary green */
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(45, 106, 79, 0.2);
+}
+
 
 textarea {
-    height: 100px;
-    resize: vertical; /* Allow vertical resizing only */
+    min-height: 80px;
+    resize: vertical;
 }
 
-input[type='email'],
-input[type='password'],
-input[type='text'],
-select {
-    background-color: #f5f5f5;
+/* Clear Input Button ('X') */
+.clear-input {
+    position: absolute;
+    right: 12px;
+    /* Vertically center - adjust top/transform as needed */
+    top: calc(50% + 4px); /* Position relative to the input top + label height compensation approx */
+     transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 16px; /* Make it slightly larger */
+    font-weight: bold;
+    color: #aaa;
+    padding: 5px;
+    line-height: 1;
+    display: none; /* Hidden by default */
+     z-index: 2; /* Ensure it's above the input */
 }
+.clear-input:hover {
+    color: #555;
+}
+
+/* Show clear button when input is focused or has value (more robust selector) */
+.form-group input:not(:placeholder-shown) ~ .clear-input,
+.form-group input:focus ~ .clear-input {
+    display: block;
+}
+/* Specific adjustment if label is above */
+.form-group label + input:not(:placeholder-shown) ~ .clear-input,
+.form-group label + input:focus ~ .clear-input {
+     top: calc(50% + 15px); /* Adjust if label is present */
+}
+
+/* Special Styling for Role Selector */
+#signUpRole {
+    cursor: pointer;
+}
+
+
+/* ----------------------------- */
+/* --- Buttons --- */
+/* ----------------------------- */
 
 button {
-    background-color: #2d6a4f;
+    background-color: #2d6a4f; /* Primary Green */
     color: white;
     border: none;
     cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 10px;
-    padding: 14px 20px;
-    margin: 10px 0;
-    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2); /* Slightly more prominent shadow */
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    font-size: 16px;
+    font-weight: 700; /* Bolder */
+    border-radius: 8px; /* Slightly smaller radius */
+    padding: 12px 20px;
+    margin: 10px 0 5px 0; /* Consistent margins */
+    width: 100%; /* Default to full width for form buttons */
+    box-sizing: border-box;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+/* Smaller buttons / Inline buttons */
+button.inline, button.small {
+    width: auto;
+    padding: 8px 15px;
+    font-size: 14px;
 }
 
 button:hover {
-    background-color: #40916c;
-     transform: translateY(-3px); /* Slightly larger move on hover */
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
+    background-color: #40916c; /* Lighter green on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduced shadow when active */
+    background-color: #1b4332; /* Darker green on active */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* App Section */
-#appSection {
-    width: 100%;
-    max-width: 550px;
-    padding: 30px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 15px;
-     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Slightly larger shadow */
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-     margin: 20px; /* Add margin */
+/* Danger Button Style */
+button.button-danger {
+    background-color: #d9534f; /* Red color for danger */
+    box-shadow: 0 4px 10px rgba(217, 83, 79, 0.2);
 }
-header{
-    margin-bottom: 20px;
-     padding-bottom: 20px;
-        border-bottom: 1px solid #ddd;
+button.button-danger:hover {
+    background-color: #c9302c;
+    box-shadow: 0 6px 15px rgba(217, 83, 79, 0.3);
+}
+button.button-danger:active {
+    background-color: #ac2925;
+    box-shadow: 0 2px 5px rgba(217, 83, 79, 0.2);
 }
 
-/* Content Sections */
-.content-section {
-    display: none;
-    margin-top: 25px;
-    animation: fadeIn 0.3s ease;
-     padding: 15px; /* Add padding to content sections */
-        border-radius: 10px;
-        background-color: #f9f9f9;
-       box-shadow: 0 2px 4px rgba(0,0,0, 0.1);
+/* Secondary Action Button Style */
+button.secondary-action {
+     background-color: #6c757d; /* Grey for secondary */
+     box-shadow: 0 4px 10px rgba(108, 117, 125, 0.15);
+}
+button.secondary-action:hover {
+     background-color: #5a6268;
+     box-shadow: 0 6px 15px rgba(108, 117, 125, 0.2);
+}
+button.secondary-action:active {
+     background-color: #495057;
+     box-shadow: 0 2px 5px rgba(108, 117, 125, 0.15);
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Order Items Buttons */
-#orderItemsSection button {
-    margin: 8px 0;
+/* Link styled as button */
+a.button-link {
+    display: inline-block; /* Allow padding/margins */
     background-color: #2d6a4f;
     color: white;
-    border: none;
-    padding: 12px 16px;
+    text-decoration: none;
+    padding: 10px 18px;
     border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    font-weight: 700;
+    margin: 10px 0;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
-
-#orderItemsSection button:hover {
+a.button-link:hover {
     background-color: #40916c;
     transform: translateY(-2px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+     text-decoration: none;
 }
 
-#selectedItems {
-    margin-top: 20px;
-    font-size: 16px;
+/* Specific button styles where needed */
+#googleSignInButton { background-color: #4285F4; }
+#googleSignInButton:hover { background-color: #357ae8; }
+
+
+/* ----------------------------- */
+/* --- Specific Sections --- */
+/* ----------------------------- */
+
+/* Clock & Welcome */
+#clockDisplay { font-size: 1.5em; font-weight: 700; margin: 10px 0; color: #2d6a4f;}
+#welcomeMessage { font-size: 1.2em; font-weight: 500; margin-bottom: 15px; }
+
+/* Order/Driver Panels */
+#orderPanel, #orderRequestPanel {
+     border: 1px solid #eee;
+     padding: 15px;
+     margin: 20px 0;
+     border-radius: 8px;
+     background-color: #f8f9fa;
+}
+
+/* Location / Map */
+#locationSection { margin-top: 20px; }
+#mapPlaceholder, .map-container, .map-container-small {
+    background-color: #e9ecef;
+    border: 1px dashed #ccc;
+    padding: 20px;
+    margin-top: 10px;
+    border-radius: 8px;
+    text-align: center;
+    color: #666;
+    min-height: 100px; /* Minimum height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.map-container-small { min-height: 60px; font-size: 0.9em; }
+
+/* Order History & FAQ List */
+#orderList, #faqList { list-style: none; padding: 0; }
+#orderList div, #faqList div {
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    margin-bottom: 10px;
+}
+#orderList div:last-child, #faqList div:last-child { border-bottom: none; }
+#faqList .faq-question { font-weight: bold; color: #111; }
+#faqList .faq-answer { color: #444; margin-left: 10px;}
+.order-history-item h4 { margin: 0 0 5px 0; }
+.order-history-item p { margin: 3px 0; font-size: 0.95em; }
+
+/* Order Status styling in history (needs JS to add class) */
+.status-pending { color: #ffc107; font-weight: bold; }
+.status-driver-assigned { color: #17a2b8; font-weight: bold; }
+.status-picking-up { color: #fd7e14; font-weight: bold; }
+.status-on-the-way { color: #007bff; font-weight: bold; }
+.status-delivered { color: #28a745; font-weight: bold; }
+.status-cancelled { color: #dc3545; font-weight: bold; text-decoration: line-through;}
+
+/* Account & Admin */
+.account-details p { margin: 5px 0; }
+.account-details span { font-weight: normal; color: #555; }
+#adminSection { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+.user-list { margin-top: 10px; max-height: 300px; overflow-y: auto; }
+.user-list li { list-style: none; padding: 10px; border-bottom: 1px dotted #eee; }
+.user-list hr { display: none; } /* Remove redundant hr from JS generated list item */
+
+/* Settings */
+.settings-options .form-group { display: flex; align-items: center; }
+.settings-options label { margin-bottom: 0; margin-left: 10px; }
+#darkModeToggle { width: auto; margin-right: 5px; } /* Adjust checkbox size */
+
+/* Facebook Link Box */
+.facebook-link {
+    background-color: #eef; /* Light blue background */
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0, 0.05);
+}
+.facebook-link a.button-link { /* Overriding general link button style slightly */
+    background-color: #1877f2; /* Facebook Blue */
+}
+.facebook-link a.button-link:hover {
+    background-color: #145da0;
+}
+
+/* ----------------------------- */
+/* --- Chat Interface --- */
+/* ----------------------------- */
+
+#chatBox {
+    margin-top: 25px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+#chatBox h3 { margin-top: 0; }
+
+#chatMessages {
+    height: 250px; /* Increased height */
+    overflow-y: auto;
+    border: 1px solid #e5e5e5;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+/* Styling individual messages */
+.message {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 15px;
+    line-height: 1.4;
+    max-width: 75%; /* Max width of bubble */
+    word-wrap: break-word; /* Ensure long words wrap */
+}
+.message.incoming { /* Message received */
+    background-color: #e9ecef;
+    color: #333;
+    margin-right: auto; /* Align left */
+    border-bottom-left-radius: 4px; /* Bubble tail effect */
+}
+.message.own { /* Message sent by current user */
+    background-color: #d1e7dd; /* Lighter green for own messages */
+    color: #1b4332;
+    margin-left: auto; /* Align right */
+    border-bottom-right-radius: 4px; /* Bubble tail effect */
+    text-align: left; /* Keep text left aligned within right-aligned bubble */
+}
+
+.chat-input-area {
+    display: flex;
+    align-items: center; /* Align items vertically */
+    margin-top: 10px;
+}
+#chatInput {
+    flex-grow: 1;
+    margin-right: 8px; /* Space between input and button */
+    /* Uses general input styling */
+}
+#chatBox button {
+    width: auto; /* Make send button shrink-to-fit */
+    padding: 10px 15px; /* Adjust padding */
+    font-size: 15px;
+    margin: 0; /* Remove default button margins */
+    /* Uses general button styling */
+}
+
+
+/* ----------------------------- */
+/* --- Status & Error Messages --- */
+/* ----------------------------- */
+
+.error-message {
+    color: #dc3545; /* Bootstrap danger red */
+    font-size: 0.9em;
+    margin-top: 5px;
+    text-align: left; /* Errors in forms should be left-aligned */
+}
+
+.status-message, .auth-message { /* Generic status message */
+    color: #555;
+    font-size: 0.95em;
+    font-style: italic;
+    margin-top: 10px;
+    text-align: center;
+}
+.status-message.success, #feedbackStatus.success {
+    color: #28a745; /* Bootstrap success green */
     font-weight: bold;
 }
 
-/* Bottom Navigation Bar */
+/* Loading Spinner */
+.loading-message {
+    color: #555;
+    font-style: italic;
+    margin-top: 5px;
+    font-size: 0.9em;
+    text-align: center;
+    display: flex; /* Use flex for aligning text and spinner */
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-message.loading::before { /* Use pseudo-element for spinner */
+    content: '';
+    display: inline-block;
+    width: 16px; /* Spinner size */
+    height: 16px;
+    margin-right: 8px; /* Space between spinner and text */
+    border: 3px solid rgba(45, 106, 79, 0.2); /* Lighter green border */
+    border-top-color: #2d6a4f; /* Primary green top border */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    box-sizing: border-box;
+}
+/* Hide spinner if only .loading-message is present but not .loading */
+.loading-message:not(.loading)::before { display: none; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ----------------------------- */
+/* --- Bottom Navigation --- */
+/* ----------------------------- */
+
 #bottomNav {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #2d6a4f;
+    justify-content: space-around; /* Even spacing */
+    align-items: stretch; /* Make items fill height */
+    padding: 5px 0; /* Reduced padding */
+    background-color: #1b4332; /* Darker green for contrast */
     color: white;
     position: fixed;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    border-radius: 10px;
-    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
+    bottom: 0; /* Stick to bottom */
+    left: 0;
+    right: 0;
+    border-radius: 0; /* Full width, no radius */
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.15);
+    z-index: 1000; /* Ensure it's above other content */
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -228,248 +553,172 @@ header{
     color: white;
     border: none;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    font-size: 12px; /* Smaller font */
+    font-weight: 500;
+    padding: 8px 5px; /* Adjust padding */
+    flex-grow: 1; /* Allow buttons to grow equally */
+    display: flex;
+    flex-direction: column; /* Stack icon and text */
+    align-items: center;
+    justify-content: center;
+    border-radius: 0; /* Remove radius from individual buttons */
+    transition: background-color 0.2s ease;
+     margin: 0; /* Remove default margins */
+     box-shadow: none; /* Remove default shadows */
+     transform: none; /* Remove default transforms */
+}
+
+.nav-icon {
+    font-size: 20px; /* Icon size */
+    margin-bottom: 3px;
 }
 
 #bottomNav button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
-    transform: translateY(-2px);
+    background-color: rgba(255, 255, 255, 0.1);
+     transform: none; /* No hover transform needed */
+     box-shadow: none;
 }
 
 #bottomNav button:active {
-    transform: translateY(0);
+    background-color: rgba(255, 255, 255, 0.2);
+     transform: none;
+     box-shadow: none;
 }
 
-/* Contact Section */
-#contactSection {
-    text-align: left;
-    margin-top: 25px;
-}
+/* ----------------------------- */
+/* --- Dark Mode --- */
+/* ----------------------------- */
 
-#contactSection p {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* Track Order Status */
-#trackingStatus {
-    margin-top: 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #2d6a4f;
-}
-
-/* Error Messages */
-.error-message {
-    color: red;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-/* Loading Messages */
-.loading-message {
-    color: #2d6a4f;
-    font-style: italic;
-    margin-top: 5px;
-    font-size: 14px;
-}
-
-/* Auth Messages */
-.auth-message {
-    font-style: italic;
-    margin-top: 10px;
-}
-
-/* Clear Input button */
-.clear-input {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 14px;
-    color: #999;
-    display: none;
-}
-
-input:focus + .clear-input,
-input:valid + .clear-input,
-input:not(:placeholder-shown) + .clear-input {
-    display: block;
-}
-
-/* Dark Mode */
 .dark-mode {
-    background-color: #333;
-    color: #ffeb3b;
+    background-color: #212529; /* Dark background */
+    color: #f8f9fa; /* Light text */
 }
 
-.dark-mode body::before {
-    opacity: 0.1;
+/* Adjust background effects for dark mode */
+.dark-mode body::before { opacity: 0.08; }
+.dark-mode body {
+    background-image: /* Use darker patterns */
+        repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 255, 255, 0.02) 1px, rgba(255, 255, 255, 0.02) 2px),
+        repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.02) 1px, rgba(255, 255, 255, 0.02) 2px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.01) 10px, transparent 10px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.01) 10px, transparent 10px);
 }
 
+
+/* Dark Mode: Containers */
 .dark-mode #authSection,
-.dark-mode #appSection {
-    background-color: #444;
-    color: #ffeb3b;
-    box-shadow: 0 8px 20px rgba(255, 235, 59, 0.2);
+.dark-mode #appSection,
+.dark-mode #otpPage,
+.dark-mode .content-section {
+    background-color: #343a40; /* Dark grey container background */
+    color: #f8f9fa;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+     border-color: #495057; /* Adjust borders */
 }
+.dark-mode header { border-bottom-color: #495057; }
 
-.dark-mode button {
-    background-color: #555;
-    color: #ffeb3b;
-}
+/* Dark Mode: Typography */
+.dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4 { color: #fff; }
+.dark-mode p, .dark-mode label { color: #ced4da; } /* Lighter grey text */
+.dark-mode a { color: #69b0ff; } /* Brighter blue links */
+.dark-mode a:hover { color: #a4cfff; }
+.dark-mode #clockDisplay { color: #9ef01a; } /* Brighter green for clock */
 
-.dark-mode button:hover {
-    background-color: #666;
-}
-
-.dark-mode input,
+/* Dark Mode: Forms & Inputs */
+.dark-mode input[type="text"],
+.dark-mode input[type="email"],
+.dark-mode input[type="password"],
+.dark-mode input[type="tel"],
+.dark-mode input[type="number"],
 .dark-mode select,
 .dark-mode textarea {
-    background-color: #555;
-    color: #ffeb3b;
-    border-color: #666;
+    background-color: #495057; /* Darker input background */
+    color: #f8f9fa;
+    border-color: #6c757d;
 }
+.dark-mode input::placeholder, .dark-mode textarea::placeholder { color: #adb5bd;}
+.dark-mode input:focus, .dark-mode select:focus, .dark-mode textarea:focus {
+    border-color: #9ef01a; /* Bright green focus border */
+    background-color: #5a6167;
+    box-shadow: 0 0 0 2px rgba(158, 240, 26, 0.3);
+}
+.dark-mode .clear-input { color: #adb5bd; }
+.dark-mode .clear-input:hover { color: #f8f9fa; }
+/* Dark mode for settings checkbox */
+.dark-mode .settings-options label { color: #f8f9fa; }
 
-.dark-mode #bottomNav {
-    background-color: #444;
-    box-shadow: 0 3px 7px rgba(255, 235, 59, 0.2);
-}
 
-/* Dark Mode button*/
-#toggleDarkMode button {
-    background-color: #2d6a4f;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 10px;
-    padding: 10px;
-    margin: 10px 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+/* Dark Mode: Buttons */
+.dark-mode button {
+    background-color: #527865; /* Muted green */
+    color: #f8f9fa;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
+.dark-mode button:hover {
+    background-color: #69917d;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+.dark-mode button:active {
+     background-color: #426051;
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+.dark-mode button.button-danger { background-color: #c82333; box-shadow: 0 4px 10px rgba(200, 35, 51, 0.3);}
+.dark-mode button.button-danger:hover { background-color: #bd2130; box-shadow: 0 6px 15px rgba(200, 35, 51, 0.4);}
+.dark-mode button.button-danger:active { background-color: #a71d2a; box-shadow: 0 2px 5px rgba(200, 35, 51, 0.3);}
 
-#toggleDarkMode button:hover {
-    background-color: #40916c;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+.dark-mode a.button-link { background-color: #527865; color: #f8f9fa; }
+.dark-mode a.button-link:hover { background-color: #69917d; }
+.dark-mode .facebook-link a.button-link { background-color: #3b5998; /* Darker FB blue */ }
+.dark-mode .facebook-link a.button-link:hover { background-color: #2d4373; }
 
-#toggleDarkMode {
-    margin-bottom: 20px;
-}
 
-/*Loading animation*/
-.loading {
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1.5s linear infinite;
-  margin:0 auto;
-  display: none;
-}
-.loading-message.loading {
-    display:block;
-}
+/* Dark Mode: Specific Sections */
+.dark-mode #bottomNav { background-color: #212529; box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.4); }
+.dark-mode #bottomNav button { color: #ced4da; }
+.dark-mode #bottomNav button:hover { background-color: rgba(255, 255, 255, 0.05); }
+.dark-mode #bottomNav button:active { background-color: rgba(255, 255, 255, 0.1); }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-/* Facebook Link*/
-.facebook-link {
-    background-color: #e0e0e0;
-    padding: 15px;
-    border-radius: 10px;
-    margin: 15px 0;
-    display: inline-block;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0, 0.1);
-}
+.dark-mode .facebook-link { background-color: #2c2f33; }
+.dark-mode #orderPanel, .dark-mode #orderRequestPanel { background-color: #2c2f33; border-color: #495057; }
+.dark-mode #mapPlaceholder, .dark-mode .map-container { background-color: #495057; border-color: #6c757d; color: #ced4da; }
+.dark-mode #orderList div, .dark-mode #faqList div { border-bottom-color: #495057; }
+.dark-mode #faqList .faq-question { color: #fff; }
+.dark-mode #faqList .faq-answer { color: #ced4da;}
 
-.facebook-link a {
-    display: inline-block;
-    margin-top: 10px;
-    background-color: #1877f2;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-}
-.facebook-link a:hover {
-    background-color: #145da0;
-}
-/* Chat box styles */
-#chatBox {
-    margin-top: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-     background-color: #f5f5f5;
-     box-shadow: 0 2px 4px rgba(0,0,0, 0.1);
-}
+.dark-mode #chatBox { background-color: #2c2f33; border-color: #495057; }
+.dark-mode #chatMessages { background-color: #3b3f45; border-color: #555b61; }
+.dark-mode .message.incoming { background-color: #4b5157; color: #f0f0f0; }
+.dark-mode .message.own { background-color: #3a5a40; color: #e0e0e0; }
 
-#chatMessages {
-    height: 200px;
-    overflow-y: auto;
-    border: 1px solid #eee;
-    padding: 5px;
-    margin-bottom: 10px;
-    background-color: #fff;
-     border-radius: 5px;
-}
+/* Dark Mode: Messages */
+.dark-mode .error-message { color: #f5c6cb; /* Lighter red for dark bg */ }
+.dark-mode .status-message, .dark-mode .auth-message { color: #adb5bd; }
+.dark-mode .status-message.success { color: #75b798; /* Lighter success green */}
+.dark-mode .loading-message { color: #adb5bd; }
+.dark-mode .loading-message.loading::before { border-color: rgba(158, 240, 26, 0.3); border-top-color: #9ef01a; } /* Bright green spinner */
 
-.chat-input-area {
-    display: flex;
-}
 
-#chatInput {
-    flex-grow: 1;
-    padding: 10px;
-    margin-right: 5px;
-    border: 1px solid #ddd;
-      border-radius: 5px;
-}
+/* ----------------------------- */
+/* --- Responsive Design --- */
+/* ----------------------------- */
 
-#chatBox button {
-  background-color: #2d6a4f;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 5px;
-    padding: 10px 10px;
-     margin: 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
+@media (max-width: 600px) {
+    body { padding: 10px 10px 80px 10px; /* Adjust padding, less bottom space needed */ }
 
-#chatBox button:hover {
-  background-color: #40916c;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-.message {
-    padding: 8px;
-    margin: 5px 0;
-    border-radius: 10px;
-     background-color: #f0f0f0;
-      width: fit-content;
-      max-width: 80%;
-}
-.message.own {
-    background-color: #e0f7fa;
-     text-align: right;
-      margin-left: auto;
+    #authSection, #appSection, #otpPage {
+        padding: 20px;
+        margin: 10px auto; /* Less vertical margin */
+        max-width: 95%; /* Allow slightly wider on small screens */
+    }
+
+    h1 { font-size: 1.8em; }
+    h2 { font-size: 1.4em; }
+
+    button { padding: 12px 15px; font-size: 15px; }
+
+    #bottomNav { padding: 3px 0; }
+    #bottomNav button { font-size: 10px; padding: 6px 3px; } /* Further reduce font size/padding */
+    .nav-icon { font-size: 18px; } /* Slightly smaller icons */
+
+    #chatMessages { height: 200px; } /* Reduce chat height */
 }
