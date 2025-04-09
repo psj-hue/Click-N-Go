@@ -10,1131 +10,665 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     signOut,
-    onAuthStateChanged // Optional: Listener for auth state changes
-    // Additional methods if migrating local email/pass:
-    // createUserWithEmailAndPassword,
-    // signInWithEmailAndPassword,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    onValue,
+    off,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ---=== YOUR FIREBASE CONFIGURATION ===---
 // Replace placeholders below if necessary, but use the values from your Firebase Console Project Settings
 const firebaseConfig = {
-  apiKey: "AIzaSyDB5HOMSqUgpO9Dy3GhI9-vhemmr9sATmg",
+  apiKey: "AIzaSyDB5HOMSqUgpO9Dy3GhI9-vhemmr9sATmg", // Replace if needed
   authDomain: "click-n--go.firebaseapp.com",
-  databaseURL: "https://click-n--go-default-rtdb.firebaseio.com", // If using Realtime DB
+  databaseURL: "https://click-n--go-default-rtdb.firebaseio.com", // Crucial for RTDB
   projectId: "click-n--go",
-  storageBucket: "click-n--go.appspot.com", // Common convention, verify in console
+  storageBucket: "click-n--go.appspot.com",
   messagingSenderId: "697356789668",
   appId: "1:697356789668:web:33eab0fc45e56274ef8331",
-  measurementId: "G-G95S72XP35" // Optional for Analytics
+  measurementId: "G-G95S72XP35"
 };
 // -------------------------------------------
 
-// Initialize Firebase Globals (Declare before first use)
+// Initialize Firebase Globals
 let app;
 let analytics;
 let auth;
 let googleProvider;
+let db; // Database instance
+let chatMessagesRef; // Reference to chat messages location
+let chatListenerUnsubscribe = null; // To hold the listener detach function
 
 try {
-    // Initialize the core Firebase app
     app = initializeApp(firebaseConfig);
-
-    // Initialize Analytics (optional, check for valid ID)
     if (firebaseConfig.measurementId && firebaseConfig.measurementId.startsWith('G-')) {
         analytics = getAnalytics(app);
     } else {
         console.warn("Firebase Analytics not initialized: measurementId missing/invalid.");
     }
-
-    // Initialize Firebase Authentication
     auth = getAuth(app);
-
-    // Initialize Google Auth Provider for Google Sign-In
+    db = getDatabase(app); // Initialize Realtime Database
+    chatMessagesRef = ref(db, 'chats/mainRoom'); // Define chat reference path
     googleProvider = new GoogleAuthProvider();
-
-    console.log("Firebase Initialized Successfully.");
-
+    console.log("Firebase Initialized Successfully (including Realtime Database).");
 } catch (error) {
-    // Handle critical initialization errors
     console.error("FATAL: Firebase Initialization Failed:", error);
-    alert("Critical Error: Could not initialize required services. Please check configuration or network connection.");
-    // Replace page content with an error message to prevent broken UI
+    alert("Critical Error: Could not initialize required services.");
     document.body.innerHTML = `<div style='padding: 30px; text-align: center; color: red;'><h2>Initialization Error</h2><p>Could not connect to critical services. Please check the console log or contact support.</p></div>`;
-    // Stop further script execution
     throw new Error("Firebase Initialization Failed - Application cannot continue.");
 }
 
-
 // --- SECURITY WARNINGS --- //
-// 1. User Data Storage: Using localStorage for custom data (role, location, phone) is simple but NOT secure for sensitive info and doesn't sync across devices. Strongly consider using Firestore or Realtime Database with appropriate Security Rules linked to the Firebase User ID (uid) for production apps.
-// 2. Local Email/Password System: The included Email/Password sign-up and login system (using `signUp`, `verifyOTP`, `login`) stores passwords INSECURELY in localStorage. This is DANGEROUS for production. Migrate this functionality fully to Firebase Authentication methods (`createUserWithEmailAndPassword`, `signInWithEmailAndPassword`) or remove it completely.
-// 3. Firebase Security Rules: You MUST configure Firebase Security Rules (for Firestore, Realtime DB, Storage) to protect your data from unauthorized access. Start immediately in the Firebase Console under the respective service's "Rules" tab. Without proper rules, your data is likely vulnerable.
+// 1. Local Storage for user profile data (role, location, phone) is NOT secure or synced. Migrate to Firestore/RTDB with Security Rules.
+// 2. Local Email/Password system is INSECURE (plaintext password storage). Migrate fully to Firebase Auth methods.
+// 3. Firebase Security Rules MUST be configured for Realtime Database AND Auth to protect your data. SET THEM UP NOW in the Firebase Console.
 // ------------------------ //
 
 // --- Global Variables ---
-let currentUser = null; // Holds the application's state object for the currently logged-in user
-
+let currentUser = null;
 
 // --- Initialization & Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if Firebase Auth was successfully initialized before proceeding
-    if (!auth) {
-        console.error("Firebase Auth instance is not available during DOMContentLoaded. Application may be broken.");
-        return; // Prevent errors if Firebase init failed critically
+    if (!auth || !db) {
+        console.error("Firebase Auth or Database instance is not available. App may be broken.");
+        return;
     }
-    // Determine initial logged-in state (using localStorage as primary or secondary source)
     initializeAuthenticationState();
-    // Set up event handlers for forms and buttons
     attachEventListeners();
-    // Load non-dynamic content like FAQs and apply preferences
     loadStaticData();
-    // Start any timers needed (like the clock)
     startTimers();
 });
 
-/** Checks localStorage for a previously logged-in user session */
 function initializeAuthenticationState() {
     const storedUser = localStorage.getItem('clickngoUser');
     if (storedUser) {
         try {
             currentUser = JSON.parse(storedUser);
             console.log("Restored user session from localStorage:", currentUser?.email);
-            // Update the UI based on the restored user data
             updateUIForSignedInUser(currentUser);
         } catch (e) {
-            console.error("Error parsing stored user data from localStorage:", e);
-            localStorage.removeItem('clickngoUser'); // Clear potentially corrupted data
-            resetToAuthState(); // Show the login page if data is bad
+            console.error("Error parsing stored user data:", e);
+            localStorage.removeItem('clickngoUser');
+            resetToAuthState();
         }
     } else {
-        // If no user found in local storage, ensure the login page is shown
-        console.log("No user found in localStorage. Displaying authentication page.");
+        console.log("No user in localStorage. Displaying auth page.");
         resetToAuthState();
     }
-    // Optional: Implement robust Firebase state listener (onAuthStateChanged) here
-    // to keep UI perfectly in sync with actual Firebase session status.
+
+    // Listen for actual Firebase Auth state changes
+    onAuthStateChanged(auth, (firebaseUser) => {
+        if (firebaseUser) {
+            // User is signed in according to Firebase.
+            // Check if our local state matches. If not, maybe sync/update.
+            if (!currentUser || currentUser.uid !== firebaseUser.uid) {
+                console.warn("Firebase auth state changed to signed in, but local state mismatch or absent. Re-fetch/re-init might be needed if auto-login desired, or user needs manual Google Sign-in via button.");
+                // For this app's flow, we rely on explicit login actions (button click)
+                // If currentUser IS set and matches, we assume everything is fine.
+                if(currentUser && currentUser.uid === firebaseUser.uid){
+                     console.log("Firebase onAuthStateChanged confirms current user is valid:", firebaseUser.email);
+                 }
+            }
+        } else {
+            // User is signed out according to Firebase.
+            // If our local state *still* thinks a user is logged in, force clean up.
+            if (currentUser) {
+                console.warn("Firebase auth state changed to signed out, but local state has a user. Forcing local cleanup.");
+                logoutFirebase(); // Trigger the full logout process
+            }
+        }
+    });
 }
 
-/** Sets up event listeners for forms and attaches functions to window for inline onclicks */
+
 function attachEventListeners() {
     console.log("Attaching event listeners...");
-    // Form submission handlers
+    // Forms
     document.getElementById('loginFormElem')?.addEventListener('submit', login);
     document.getElementById('signupFormElem')?.addEventListener('submit', signUp);
     document.getElementById('feedbackForm')?.addEventListener('submit', submitFeedback);
 
-    // Expose necessary functions globally for use by inline HTML onclick handlers
-    // Note: A more modern approach avoids inline onclicks and uses addEventListener exclusively.
+    // --- Chat Send Button Listener ---
+    // (Make sure your HTML button has id="chatSendButton")
+    document.getElementById('chatSendButton')?.addEventListener('click', sendMessage);
+
+    // Expose functions to global scope for HTML onclick attributes (use sparingly)
     window.showLoginForm = showLoginForm;
     window.showSignUpForm = showSignUpForm;
-    window.verifyOTP = verifyOTP;           // Used by local signup simulation
-    window.clearInput = clearInput;         // Input field 'X' button
-    window.switchSection = switchSection;   // Main app navigation
-    window.logoutFirebase = logoutFirebase; // *** Correct Logout Function ***
-    window.deleteAccount = deleteAccount;     // Account deletion handler
-    window.toggleDarkMode = toggleDarkMode; // Theme toggle handler
+    window.verifyOTP = verifyOTP;           // Used by insecure local signup
+    window.clearInput = clearInput;
+    window.switchSection = switchSection;   // Main navigation
+    window.logoutFirebase = logoutFirebase;
+    window.deleteAccount = deleteAccount;
+    window.toggleDarkMode = toggleDarkMode;
     window.savePreferences = savePreferences; // Settings save handler
-    window.simulateOrder = simulateOrder;   // Demo feature trigger
-    window.showOrderHistory = showOrderHistory; // Feature trigger
-    window.signInWithGoogleFirebase = signInWithGoogleFirebase; // *** Correct Google Sign-In Function ***
-    window.sendMessage = sendMessage;       // Demo chat send button
+    window.simulateOrder = simulateOrder;   // Demo feature
+    window.showOrderHistory = showOrderHistory;
+    window.signInWithGoogleFirebase = signInWithGoogleFirebase; // Google Sign-in
+    // Note: Removed `window.sendMessage` - use the event listener instead.
 }
 
-/** Loads static application data like FAQs and applies stored preferences */
+
 function loadStaticData() {
     console.log("Loading static data (FAQ, Preferences)...");
-    loadFaq(); // Populate the FAQ section
-    loadPreferences(); // Apply theme and language settings
+    loadFaq();
+    loadPreferences();
 }
 
-/** Initializes timers, such as the live clock update */
 function startTimers() {
     console.log("Starting timers (Clock)...");
-    updateClock(); // Initial clock display
-    displayWelcomeMessage(); // Initial welcome message
-    setInterval(updateClock, 1000); // Update clock every second
+    updateClock();
+    displayWelcomeMessage();
+    setInterval(updateClock, 1000);
 }
 
 // --- UI Management Functions ---
 
-/** Updates the entire UI to reflect the state of a signed-in user */
 function updateUIForSignedInUser(user) {
-    if (!user || !user.email) { // Basic check for a valid user object
-        console.warn("updateUIForSignedInUser called with invalid user object. Resetting to auth state.", user);
+    if (!user || !user.email) {
+        console.warn("updateUIForSignedInUser: invalid user object.", user);
         resetToAuthState();
         return;
     }
     console.log("Updating UI for signed-in user:", user.email);
-    // Show the main application section, hide authentication & OTP sections
     toggleVisibility('authSection', 'appSection');
-    toggleVisibility('otpPage', null); // Explicitly hide OTP page
+    toggleVisibility('otpPage', null);
 
-    populateAccountInfo(user);      // Display user details in Account section and header
-    displayDashboard(user.role);    // Show relevant panels (customer vs driver)
-    updateMap();                    // Update location/map placeholders
-    loadPreferences();              // Ensure theme (like dark mode) is correctly applied
+    populateAccountInfo(user);
+    displayDashboard(user.role);
+    updateMap();
+    loadPreferences();
 
-    // Navigate to the default 'home' section after login
-    switchSection('homeSection');
+    switchSection('homeSection'); // Default to home
 }
 
-/** Resets the UI to the logged-out state, showing the Login form */
 function resetToAuthState() {
-    console.log("Resetting UI to authentication (logged-out) state.");
-    toggleVisibility('appSection', 'authSection'); // Show Auth, Hide App
-    toggleVisibility('otpPage', null);             // Hide OTP if visible
-    showLoginForm(); // Ensure Login form is visible within the Auth section
-    // Potentially clear any user-specific data displayed elsewhere if needed
+    console.log("Resetting UI to authentication state.");
+    // *** Detach chat listener before hiding app section ***
+    detachChatListener();
+    toggleVisibility('appSection', 'authSection');
+    toggleVisibility('otpPage', null);
+    showLoginForm();
 }
 
-/** Utility to hide one element (by ID) and show another (by ID) */
 function toggleVisibility(hideId, showId) {
     const hideEl = document.getElementById(hideId);
-    if (hideEl) {
-        hideEl.style.display = 'none'; // Hide the specified element
-    } else if (hideId) {
-        // Log a warning if the element to hide wasn't found (unless hideId is null)
-        // console.warn(`Element to hide not found: #${hideId}`);
-    }
-
+    if (hideEl) hideEl.style.display = 'none';
     if (showId) {
          const showEl = document.getElementById(showId);
-         if (showEl) {
-             showEl.style.display = 'block'; // Show the specified element (adjust display type if needed)
-         } else {
-             // Log an error if the element to show couldn't be found
-             console.error(`Element to show not found: #${showId}`);
-         }
+         if (showEl) showEl.style.display = 'block';
+         else console.error(`Element to show not found: #${showId}`);
     }
 }
 
-/** Switches the currently visible content section within the main application area */
+/** Switches content sections & handles chat listener lifecycle */
 function switchSection(sectionId) {
-    console.log(`Navigating app view to section: #${sectionId}`);
-    // Hide all direct children sections within the app's main content area
+    console.log(`Navigating to section: #${sectionId}`);
+
+    // *** Detach listener BEFORE hiding sections ***
+    if (chatListenerUnsubscribe) {
+        console.log("Detaching chat listener because of section switch.");
+        detachChatListener(); // Call detach function
+    }
+
+    // Hide all main content sections
     document.querySelectorAll('#appSection > main > .content-section').forEach(sec => {
         sec.style.display = 'none';
     });
 
-    // Special Handling for Admin Panel nested within the Account Section
+    // Handle Admin panel visibility (nested in account section)
     const adminPanel = document.getElementById('adminSection');
     if (adminPanel) {
-        // Determine if the admin panel should be visible
         const showAdminPanel = (sectionId === 'accountSection' && currentUser?.role === 'admin');
         adminPanel.style.display = showAdminPanel ? 'block' : 'none';
-        // If showing the admin panel, load the user list
-        if (showAdminPanel) {
-            console.log("Admin panel should be visible. Loading users...");
-            loadAllUsers();
-        }
+        if (showAdminPanel) loadAllUsers();
     }
 
-    // Show the target content section
+    // Show the target section
     const targetSection = document.getElementById(sectionId);
     if (targetSection) {
-        targetSection.style.display = 'block'; // Make the selected section visible
+        targetSection.style.display = 'block';
     } else {
-        // Fallback if the target section ID doesn't exist
-        console.error(`Target section "#${sectionId}" not found! Defaulting to home.`);
+        console.error(`Target section "#${sectionId}" not found! Defaulting home.`);
         const homeSection = document.getElementById('homeSection');
-        if (homeSection) homeSection.style.display = 'block'; // Show home as fallback
-        sectionId = 'homeSection'; // Correct the ID for nav highlighting if fallback occurred
+        if (homeSection) homeSection.style.display = 'block';
+        sectionId = 'homeSection'; // Correct ID for nav highlighting
     }
 
-    // Update map elements if the current section requires it (Home or Orders)
+    // Update map if required by the current section
     if (sectionId === 'orderItemsSection' || sectionId === 'homeSection') {
-        console.log("Updating map display for current section.");
         updateMap();
     }
 
-    // Update active state on bottom navigation buttons
+    // Update bottom nav active state
     document.querySelectorAll('#bottomNav button').forEach(button => {
-        // Remove active class from all buttons first
         button.classList.remove('active');
-        // Add active class if the button's onclick matches the current section
         if (button.getAttribute('onclick')?.includes(`switchSection('${sectionId}')`)) {
             button.classList.add('active');
         }
     });
+
+    // *** Setup listener AFTER showing section if it's the chat section ***
+    // Assumes chat elements are inside 'orderItemsSection' based on HTML. Adjust if you have a dedicated 'chatSection'.
+    // If chat is inside 'orderItemsSection':
+    if (sectionId === 'orderItemsSection') {
+         console.log("Current section includes chat, setting up listener.");
+         setupChatListener(); // Setup listener for this section
+    }
+    // // If you have a dedicated section: <section id="chatSection"...>
+    // if (sectionId === 'chatSection') {
+    //     console.log("Current section is chatSection, setting up listener.");
+    //     setupChatListener();
+    // }
+
 }
 
-/** Toggles visibility between Login and Sign Up forms */
 function toggleAuth(formIdToShow) {
-    console.log(`Toggling authentication form view to: ${formIdToShow}`);
+    console.log(`Toggling auth form: ${formIdToShow}`);
     const signUpFormDiv = document.getElementById('signUpForm');
     const loginFormDiv = document.getElementById('loginForm');
-
     if (signUpFormDiv) signUpFormDiv.style.display = (formIdToShow === 'signUpForm' ? 'block' : 'none');
     if (loginFormDiv) loginFormDiv.style.display = (formIdToShow === 'loginForm' ? 'block' : 'none');
-
-    clearAllErrors(); // Clear validation errors when switching
-    displayStatus('authMessage', '', null); // Clear any lingering status messages
+    clearAllErrors();
+    displayStatus('authMessage', '', null);
 }
-function showLoginForm() { toggleAuth('loginForm'); } // Convenience function for onclick
-function showSignUpForm() { toggleAuth('signUpForm'); } // Convenience function for onclick
+function showLoginForm() { toggleAuth('loginForm'); }
+function showSignUpForm() { toggleAuth('signUpForm'); }
 
-/** Shows/hides Customer Order Panel and Driver Request Panel based on user role */
 function displayDashboard(role) {
-    console.log(`Configuring dashboard panels based on role: ${role}`);
-    const orderPanel = document.getElementById('orderPanel');    // For Customers
-    const requestPanel = document.getElementById('orderRequestPanel'); // For Drivers
-
-    // Set visibility based on role
-    if (orderPanel) orderPanel.style.display = (role === 'customer') ? 'block' : 'none';
+    // Simplified - actual dashboard elements might be more complex
+    const orderPanel = document.getElementById('orderPanel'); // Customer panel
+    const requestPanel = document.getElementById('orderRequestPanel'); // Driver panel
+    if (orderPanel) orderPanel.style.display = (role === 'customer' || role === 'admin') ? 'block' : 'none'; // Admin might see customer view too?
     if (requestPanel) requestPanel.style.display = (role === 'driver') ? 'block' : 'none';
-    // Admins see neither panel by default in this logic
 }
 
-/** Updates map placeholder text in Home and Order sections */
 function updateMap() {
     const location = currentUser?.location || 'Location Not Set';
-    console.log(`Updating map placeholder elements with location: "${location}"`);
-    // Update location text elements
-    setText('userLocationDisplay', location);       // Display in Orders section
-    setText('userLocationDisplayHome', location);   // Display in Home section preview
-
-    // Update placeholder map container text
-    const mapText = `(Map placeholder showing area near <strong>${location || '?'}</strong> - Requires map API integration)`;
-    setTextHTML('mapPlaceholder', mapText);       // Full map placeholder in Orders section
-    setTextHTML('mapPlaceholderSmall', mapText);    // Small map preview in Home section
+    // Update placeholders
+    setText('userLocationDisplay', location);
+    setText('userLocationDisplayHome', location);
+    const mapText = `(Map showing area near <strong>${location || '?'}</strong>)`;
+    setTextHTML('mapPlaceholder', mapText);
+    setTextHTML('mapPlaceholderSmall', mapText);
 }
 
-/** Populates user details in the Account section UI */
 function populateAccountInfo(user) {
-     if (!user) {
-         console.warn("Attempted to populate account info with null user.");
-         // Optionally clear fields if called with null user during logout?
-         // setText('accountEmail', ''); ... etc.
-         return;
-     }
-     console.log(`Populating account info fields for user: ${user.email}`);
-     // Set text content of various spans using the utility function
+     if (!user) return;
      setText('accountEmail', user.email);
-     setText('accountName', user.displayName || '(No name set)'); // Use name, provide fallback
+     setText('accountName', user.displayName || '(Not set)');
      setText('accountLocation', user.location || 'N/A');
      setText('accountPhone', user.phone || 'N/A');
      setText('userRole', user.role || 'N/A');
-     setText('accountUid', user.uid || 'N/A (Local Account)'); // Display UID, clarify if local
-
-     // Update the welcome message in the main app header
-     setText('userEmailDisplay', user.displayName || user.email); // Prefer display name
+     setText('accountUid', user.uid || 'N/A (Local)');
+     setText('userEmailDisplay', user.displayName || user.email); // Header display
 }
 
 // --- Authentication Functions ---
 
-/** Initiates Google Sign-In process using Firebase Authentication */
 function signInWithGoogleFirebase() {
-    // Ensure Firebase Auth is ready
-    if (!auth || !googleProvider) {
-        console.error("Firebase Authentication service or Google Provider not initialized.");
-        displayStatus('authMessage', 'Authentication service is not ready. Please refresh.', 'error');
+    if (!auth || !googleProvider || !db) {
+        console.error("Firebase services not ready for Google Sign-In.");
+        displayStatus('authMessage', 'Service unavailable.', 'error');
         return;
     }
-    console.log("Initiating Google Sign-In via Firebase Popup...");
-    // Provide user feedback
+    console.log("Initiating Google Sign-In via Firebase...");
     displayStatus('authMessage', 'Opening Google Sign-In...', 'loading');
 
-    // Trigger the Firebase popup sign-in flow
     signInWithPopup(auth, googleProvider)
       .then((result) => {
-        // Successful authentication
-        const credential = GoogleAuthProvider.credentialFromResult(result); // Optional credential info
-        const firebaseUser = result.user; // The authenticated Firebase user object
-        console.log("Firebase Google Sign-In SUCCESS:", { email: firebaseUser.email, uid: firebaseUser.uid, name: firebaseUser.displayName });
-        displayStatus('authMessage', `Signed in as ${firebaseUser.email}. Finalizing profile...`, 'success');
+        const firebaseUser = result.user;
+        console.log("Firebase Google Sign-In SUCCESS:", { email: firebaseUser.email, uid: firebaseUser.uid });
+        displayStatus('authMessage', `Signed in as ${firebaseUser.email}. Loading profile...`, 'success');
 
-        // --- Adapt Firebase User data to application's 'currentUser' structure ---
+        // Structure user data for the app
         const uid = firebaseUser.uid;
         const email = firebaseUser.email;
-        // Use display name from Google, or generate a fallback from email
         const displayName = firebaseUser.displayName || email.split('@')[0];
 
-        // ** CRITICAL AREA for supplemental data **
-        // Determine/Retrieve Role, Location, Phone.
-        // This example checks localStorage keyed by UID, or uses basic prompts as a fallback.
-        // !!! Replace localStorage/prompts with database lookups (e.g., Firestore `getDoc(doc(db, 'users', uid))`) in production. !!!
-        console.log(`Looking up/prompting for supplemental data for UID: ${uid}`);
+        // ** CRITICAL: Fetch/Prompt for supplemental data **
+        // In a real app, FETCH this from Firestore/RTDB based on UID.
+        // Using localStorage/prompts for demo purposes only.
+        console.log(`Getting supplemental data for UID: ${uid} (Demo: LS/prompt)`);
         let role = localStorage.getItem(`role_${uid}`) || promptUserForRole(displayName);
         let location = localStorage.getItem(`location_${uid}`) || promptUserForLocation();
         let phone = localStorage.getItem(`phone_${uid}`) || promptUserForPhone();
 
-        // Create the application's currentUser object
         currentUser = {
-          email: email,
-          uid: uid,
-          displayName: displayName,
-          photoURL: firebaseUser.photoURL, // Store photo URL
-          role: role,
-          location: location,
-          phone: phone,
-          isFirebaseUser: true // Mark this as a user managed by Firebase Auth
+          email, uid, displayName, photoURL: firebaseUser.photoURL,
+          role, location, phone, isFirebaseUser: true
         };
 
-         // Persist supplemental info (potentially retrieved/prompted) back to localStorage (simple persistence mechanism)
-         // In production, this data would ideally already be in or written to your database.
-         console.log("Persisting supplemental data to localStorage (role, location, phone) for UID:", uid);
+         // Persist supplemental info (to LS for demo - should be DB write)
          localStorage.setItem(`role_${uid}`, currentUser.role);
          localStorage.setItem(`location_${uid}`, currentUser.location);
          localStorage.setItem(`phone_${uid}`, currentUser.phone);
-         // Persist the main user object for simple session handling via localStorage
+         // Persist main session object
          localStorage.setItem('clickngoUser', JSON.stringify(currentUser));
 
-        // Update the UI to the logged-in state after a brief confirmation message
-        setTimeout(() => {
-             updateUIForSignedInUser(currentUser); // Switch to app view, populate fields
-             displayStatus('authMessage', '', null); // Clear the "Finalizing..." message
-        }, 600); // Short delay
+         // Save/Update user profile info in DB (Example for RTDB)
+         const userProfileRef = ref(db, `users/${uid}`);
+         set(userProfileRef, {
+             email: currentUser.email,
+             displayName: currentUser.displayName,
+             role: currentUser.role,
+             location: currentUser.location,
+             phone: currentUser.phone,
+             lastLogin: serverTimestamp() // Record last login time
+         }).catch(err => console.error("Error saving user profile to RTDB:", err));
 
+        // Update UI after short delay
+        setTimeout(() => {
+             updateUIForSignedInUser(currentUser);
+             displayStatus('authMessage', '', null);
+        }, 600);
       })
       .catch((error) => {
-        // Handle errors during the sign-in process
         console.error("Firebase Google Sign-In Error:", error);
-        let userMessage = `Google Sign-In Error: ${error.message}`; // Default Firebase error message
-        // Provide more user-friendly messages for common errors
-        if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-            userMessage = 'Google Sign-in window closed before completion.';
-        } else if (error.code === 'auth/account-exists-with-different-credential') {
-             userMessage = 'This email is already associated with a password account. Please sign in using your password.';
-        } else if (error.code === 'auth/unauthorized-domain') {
-             userMessage = 'This website domain is not authorized for sign-in (Check Firebase console > Auth > Settings > Authorized Domains).';
-        }
-        // Display error to the user
+        // Handle common errors gracefully
+        let userMessage = `Google Sign-In Error: ${error.message}`;
+        if (error.code === 'auth/popup-closed-by-user') userMessage = 'Sign-in cancelled.';
+        if (error.code === 'auth/account-exists-with-different-credential') userMessage = 'Email already used.';
+        if (error.code === 'auth/unauthorized-domain') userMessage = 'Domain not authorized.';
         displayStatus('authMessage', userMessage, 'error');
       });
 }
 
-/** Signs the user out using Firebase Authentication */
 function logoutFirebase() {
-    if (!auth) { console.error("Firebase Auth is not ready for logout."); return; }
-    const userEmailForLog = currentUser?.email; // Get email before clearing currentUser
+    if (!auth) { console.error("Firebase Auth not ready for logout."); return; }
+    const userEmailForLog = currentUser?.email;
     console.log(`Attempting Firebase Sign Out for user: ${userEmailForLog || '(unknown)'}`);
+    // Detach listener FIRST (safety)
+    detachChatListener();
 
     signOut(auth).then(() => {
         console.log("Firebase Sign Out successful.");
-        // Clear application state and local storage session
         currentUser = null;
-        localStorage.removeItem('clickngoUser');
-        // Note: Supplemental localStorage data (role_uid, etc.) is not cleared on simple logout,
-        // it will just be unused until a user with that UID logs in again.
+        localStorage.removeItem('clickngoUser'); // Clear local session
+        // Supplemental LS data (role_uid etc.) remains but is unused
 
-        // Reset UI to show login page
-        resetApp();
-        // Provide feedback to user
+        resetApp(); // Handles UI reset, ensures chat listener off again
         displayStatus('authMessage', 'You have been logged out.', 'success');
-        // Clear logout message after a few seconds
         setTimeout(() => displayStatus('authMessage', '', null), 3500);
 
     }).catch((error) => {
         console.error("Firebase Sign Out Error:", error);
-        // Attempt local cleanup anyway as a fallback? Or just show error?
-        currentUser = null; // Try clearing state even if FB error occurred
+        // Attempt local cleanup anyway
+        currentUser = null;
         localStorage.removeItem('clickngoUser');
-        resetApp(); // Show login page
-        alert(`An error occurred during logout: ${error.message}. You may need to refresh the page.`);
+        resetApp(); // Reset UI even on error
+        alert(`Error during logout: ${error.message}. UI reset.`);
     });
 }
 
+// --- INSECURE Local Email/Password Functions (DEMO ONLY) ---
+// [ These functions (signUp, generateOTP, verifyOTP, login) are kept as-is from previous code ]
+// [ WARNING: These store passwords insecurely in LocalStorage. DO NOT USE IN PRODUCTION. ]
+// [ Migrate to createUserWithEmailAndPassword and signInWithEmailAndPassword ]
+async function signUp(event) { event.preventDefault(); console.warn("INSECURE local signup..."); clearAllErrors();
+    const e = document.getElementById('signUpEmail')?.value.trim(),p = document.getElementById('signUpPassword')?.value.trim(),l = document.getElementById('signUpLocation')?.value.trim(),ph = document.getElementById('signUpPhone')?.value.trim(),r = document.getElementById('signUpRole')?.value;
+    let v = true; if (!e || !isValidEmail(e)) { displayError('signUpEmailError', 'Valid email.'); v = false; } if (!p || p.length < 6) { displayError('signUpPasswordError', 'Min 6 chars.'); v = false; } if (!l) { displayError('signUpLocationError', 'Location required.'); v = false; } if (!ph || !isValidPhoneNumber(ph)) { displayError('signUpPhoneError', 'Valid phone.'); v = false; } if (!r) { displayError('signUpRoleError', 'Select role.'); v = false; } if (!v) return;
+    try {const u = JSON.parse(localStorage.getItem('clickngoUsers') || '[]'); if (u.some(usr => usr.email === e)) { displayError('signUpEmailError', 'Email exists.'); return;}} catch (err) { console.error("LS read error:", err); alert("Error checking users."); return;}
+    const otp = generateOTP(); sessionStorage.setItem('signUpData', JSON.stringify({ email:e, password:p, location:l, phone:ph, role:r, otp })); setText('otpMessage', `Enter code for ${e} (DEMO: ${otp})`); console.log(`INSECURE DEMO OTP: ${otp} for ${e}`); toggleVisibility('authSection', 'otpPage');}
+function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
+function verifyOTP() { console.warn("INSECURE local OTP verify..."); clearAllErrors('otpError', 'otpStatus'); const o=document.getElementById('otpInput')?.value.trim(),i=document.getElementById('otpInput'),s=sessionStorage.getItem('signUpData');
+    if (!s || !o) { displayError('otpError', "Session/OTP missing."); resetToAuthState(); return; } let d; try { d = JSON.parse(s); } catch (e) { displayError('otpError', "Data error."); sessionStorage.removeItem('signUpData'); resetToAuthState(); return; } if (!d || !d.otp || !d.email || !d.password) { displayError('otpError', "Incomplete data."); sessionStorage.removeItem('signUpData'); resetToAuthState(); return; }
+    if (o === String(d.otp)) { console.log(`Local OTP OK: ${d.email}`); displayStatus('otpStatus', 'Verifying...', 'loading'); setTimeout(() => { try { let u=JSON.parse(localStorage.getItem('clickngoUsers') || '[]'); if (u.some(usr=>usr.email === d.email)) { console.error(`Race condition: ${d.email}`); displayError('otpError', "Email registered."); displayStatus('otpStatus', '', null); sessionStorage.removeItem('signUpData'); resetToAuthState(); return;} const n = { email: d.email, password: d.password /* !!! BAD !!! */, location: d.location, phone: d.phone, role: d.role, uid: `local_${Date.now()}`, isFirebaseUser: false }; console.log("Creating INSECURE user:", n.email); u.push(n); localStorage.setItem('clickngoUsers', JSON.stringify(u)); sessionStorage.removeItem('signUpData'); currentUser = n; localStorage.setItem('clickngoUser', JSON.stringify(currentUser)); displayStatus('otpStatus', 'Success! Loading app...', 'success'); setTimeout(() => { updateUIForSignedInUser(currentUser); displayStatus('otpStatus', '', null); }, 900); } catch (storageError) { console.error("LS write error:", storageError); displayError('otpError', "Failed save."); displayStatus('otpStatus', '', null); }}, 1100); } else { console.log(`Local OTP FAIL: ${d.email}`); displayError('otpError', "Incorrect code."); if (i) i.value = ''; displayStatus('otpStatus', '', null); }}
+async function login(event) { event.preventDefault(); console.warn("INSECURE local login..."); clearAllErrors(); const e=document.getElementById('loginEmail')?.value.trim(), p=document.getElementById('loginPassword')?.value.trim(), er=document.getElementById('loginError');
+    if (!e || !p) { displayError(er ? 'loginError' : 'loginEmailError', 'Email & Password required.'); return; }
+    try { const u=JSON.parse(localStorage.getItem('clickngoUsers') || '[]'); const user = u.find(usr => usr.email === e && usr.password === p && !usr.isFirebaseUser); if (user) { console.log(`INSECURE local login ok: ${e}`); displayStatus('authMessage', 'Login success...', 'success'); currentUser = user; localStorage.setItem('clickngoUser', JSON.stringify(currentUser)); setTimeout(() => { updateUIForSignedInUser(currentUser); displayStatus('authMessage', '', null); }, 1000); } else { console.log(`INSECURE local login fail: ${e}`); displayError(er ? 'loginError' : 'loginEmailError', 'Invalid email/password (local).'); displayStatus('authMessage', '', null); } } catch (err) { console.error("Local login error:", err); displayError(er ? 'loginError' : 'loginEmailError', 'Login error occurred.'); displayStatus('authMessage', '', null); } }
+// --- End of INSECURE Demo Section ---
 
-// --- ** INSECURE ** Local Email/Password Functions (Uses LocalStorage) ---
-// --- WARNING: Stores passwords insecurely. NOT for production. ---
+// --- User Profile & Admin ---
+// [loadAllUsers, deleteAccount remain conceptually similar, but deleteAccount now uses Firebase Auth delete]
+async function loadAllUsers() { /* Loads users ONLY from the INSECURE localStorage list */ console.log("Admin: Loading local users..."); const el=document.getElementById('allUsers'); if (!el) return; el.innerHTML='Loading...'; setTimeout(()=>{ try {const u=JSON.parse(localStorage.getItem('clickngoUsers')||'[]'); el.innerHTML=''; if(u.length===0){el.innerHTML='<p>No local users.</p>';return;} const ul=document.createElement('ul');ul.style.listStyleType='none';ul.style.paddingLeft='0'; u.forEach(usr=>{ const li=document.createElement('li');li.style.cssText='margin-bottom:15px;padding-bottom:10px;border-bottom:1px dotted #ccc;'; let h=`<strong>Email:</strong> ${usr.email||'?'}<br>${usr.displayName?`<strong>Name:</strong> ${usr.displayName}<br>`:''}<strong>UID:</strong> <small>${usr.uid||'N/A'}</small><br><strong>Loc:</strong> ${usr.location||'?'}<br><strong>Phone:</strong> ${usr.phone||'?'}<br><strong>Role:</strong> ${usr.role||'?'}<br><small>(${usr.isFirebaseUser?'Firebase':'Local'})</small>`; li.innerHTML=h;ul.appendChild(li);});el.appendChild(ul); } catch(e){console.error("Admin load user error:",e);el.innerHTML='<p class="error-message">Error loading.</p>';}}, 400); }
+async function deleteAccount() { if (!currentUser?.email) { alert("Must be logged in."); return; } console.log(`Deletion requested: ${currentUser.email} (Firebase: ${!!currentUser.isFirebaseUser})`); if (!confirm(`DELETE ACCOUNT (${currentUser.email})? IRREVERSIBLE!`)) { console.log("Deletion cancelled."); return; }
+    if (currentUser.isFirebaseUser && currentUser.uid && auth) { const fbUser = auth.currentUser; if (fbUser && fbUser.uid === currentUser.uid) { try { displayStatus('authMessage','Deleting...','loading'); await fbUser.delete(); console.log("Firebase user deleted."); localStorage.removeItem(`role_${currentUser.uid}`); localStorage.removeItem(`location_${currentUser.uid}`); localStorage.removeItem(`phone_${currentUser.uid}`); try{let u=JSON.parse(localStorage.getItem('clickngoUsers')||'[]');u=u.filter(usr=>usr.uid !== currentUser.uid);localStorage.setItem('clickngoUsers',JSON.stringify(u));console.log("Removed from local list.");}catch(lsErr){} /* REMINDER: Add Cloud Function trigger for DB data cleanup */ alert('Account deleted.'); logoutFirebase(); } catch (error) { console.error("FB delete error:",error); displayStatus('authMessage','',null); if(error.code==='auth/requires-recent-login'){alert("Sensitive action. Sign in again, then delete immediately.");}else{alert(`Error deleting: ${error.message}`);}}} else { console.error("Deletion Mismatch!"); alert("Auth mismatch. Logout, login, retry."); return;}}
+    else if (!currentUser.isFirebaseUser && currentUser.email) { console.warn(`Deleting INSECURE user: ${currentUser.email}`); try {let u = JSON.parse(localStorage.getItem('clickngoUsers') || '[]');const i = u.length; u = u.filter(usr => !(usr.email === currentUser.email && !usr.isFirebaseUser)); if (u.length < i) {localStorage.setItem('clickngoUsers', JSON.stringify(u)); console.log("Local user removed."); alert('Local data removed.');} else {alert('Local user not found.');} logoutFirebase();} catch (e) {console.error("Local delete error:", e); alert("Error removing local data."); logoutFirebase();}}
+    else { console.error("Cannot delete: Invalid state.", currentUser); alert("Internal error."); }}
 
-/** Handles submission of the LOCAL email/password signup form */
-async function signUp(event) {
-    event.preventDefault();
-    console.warn("Executing INSECURE local email/password signup...");
-    clearAllErrors();
-
-    // Gather form data
-    const email = document.getElementById('signUpEmail')?.value.trim();
-    const password = document.getElementById('signUpPassword')?.value.trim();
-    const location = document.getElementById('signUpLocation')?.value.trim();
-    const phone = document.getElementById('signUpPhone')?.value.trim();
-    const role = document.getElementById('signUpRole')?.value;
-
-    // --- Form Validation ---
-    let isValid = true;
-    if (!email || !isValidEmail(email)) { displayError('signUpEmailError', 'Valid email required.'); isValid = false; }
-    if (!password || password.length < 6) { displayError('signUpPasswordError', 'Password must be at least 6 characters.'); isValid = false; }
-    if (!location) { displayError('signUpLocationError', 'Location is required.'); isValid = false; }
-    if (!phone || !isValidPhoneNumber(phone)) { displayError('signUpPhoneError', 'Valid phone number required.'); isValid = false; }
-    if (!role) { displayError('signUpRoleError', 'Please select your role.'); isValid = false; }
-    if (!isValid) {
-        console.warn("Local signup validation failed.");
-        return; // Stop if validation fails
-    }
-
-    // --- Check if email already exists in local storage users ---
-    try {
-         const users = JSON.parse(localStorage.getItem('clickngoUsers') || '[]');
-         if (users.some(u => u.email === email)) {
-             displayError('signUpEmailError', 'This email address is already registered locally or via Google. Please try logging in.');
-             return;
-         }
-    } catch (e) {
-         console.error("Error reading local users during signup check:", e);
-         alert("Error checking existing users. Please try again.");
-         return;
-    }
-
-
-    // --- Proceed to OTP Simulation (Demo Only) ---
-    const otp = generateOTP();
-    // Store data needed after OTP step temporarily in session storage
-    sessionStorage.setItem('signUpData', JSON.stringify({ email, password, location, phone, role, otp }));
-    // !!! INSECURE: Show OTP in UI for demo convenience !!!
-    setText('otpMessage', `Enter code for ${email} (Demo Only: ${otp})`);
-    console.log(`INSECURE DEMO: Generated OTP ${otp} for local signup: ${email}`);
-    // Switch view to OTP entry page
-    toggleVisibility('authSection', 'otpPage');
-}
-
-/** Generates a simple 6-digit OTP string (for local demo simulation) */
-function generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-/** Verifies the simulated OTP entered by the user for LOCAL signup */
-function verifyOTP() {
-    console.warn("Verifying OTP for INSECURE local signup...");
-    clearAllErrors('otpError', 'otpStatus'); // Clear previous messages
-    const enteredOTP = document.getElementById('otpInput')?.value.trim();
-    const otpInputEl = document.getElementById('otpInput');
-    const signUpDataString = sessionStorage.getItem('signUpData'); // Retrieve stored data
-
-    // --- Basic Validation ---
-    if (!signUpDataString || !enteredOTP) {
-        displayError('otpError', "OTP session expired or no OTP entered. Please sign up again.");
-        resetToAuthState(); // Send user back to signup/login start
-        return;
-    }
-    let signUpData;
-    try { // Safely parse the session data
-        signUpData = JSON.parse(signUpDataString);
-    } catch (e) {
-        console.error("Error parsing session storage OTP data:", e);
-        displayError('otpError', "Internal data error. Please sign up again.");
-        sessionStorage.removeItem('signUpData'); // Clear bad data
-        resetToAuthState(); return;
-    }
-    // Check if data seems complete
-    if (!signUpData || !signUpData.otp || !signUpData.email || !signUpData.password) {
-        displayError('otpError', "Incomplete registration data. Please sign up again.");
-        sessionStorage.removeItem('signUpData');
-        resetToAuthState(); return;
-    }
-
-    // --- Check OTP Match ---
-    if (enteredOTP === String(signUpData.otp)) { // Compare entered OTP with stored OTP
-        console.log(`Local OTP verification SUCCESS for: ${signUpData.email}`);
-        displayStatus('otpStatus', 'Verifying OTP...', 'loading');
-
-        // Simulate short delay before proceeding
-        setTimeout(() => {
-            try {
-                // Double check email doesn't exist in localStorage before adding
-                let users = JSON.parse(localStorage.getItem('clickngoUsers') || '[]');
-                 if (users.some(u => u.email === signUpData.email)) {
-                    console.error(`Local signup race condition: User ${signUpData.email} created between OTP generation and verification.`);
-                    displayError('otpError', "This email address was just registered. Please login.");
-                    displayStatus('otpStatus', '', null);
-                    sessionStorage.removeItem('signUpData');
-                    resetToAuthState();
-                    return;
-                }
-
-                // !!! Create New User Object - WARNING: Storing Plaintext Password !!!
-                const newUser = {
-                    email: signUpData.email,
-                    password: signUpData.password, // !!! HIGHLY INSECURE !!!
-                    location: signUpData.location,
-                    phone: signUpData.phone,
-                    role: signUpData.role,
-                    uid: `local_${Date.now()}`, // Create a basic unique ID for local users
-                    isFirebaseUser: false // Flag as locally managed
-                 };
-                 console.log("Creating INSECURE local user entry:", newUser.email);
-                 users.push(newUser); // Add to user array
-                 localStorage.setItem('clickngoUsers', JSON.stringify(users)); // Save updated list
-
-                 sessionStorage.removeItem('signUpData'); // Clean up temp session data
-
-                 // Log the user in immediately after local signup
-                 currentUser = newUser;
-                 localStorage.setItem('clickngoUser', JSON.stringify(currentUser)); // Persist this local session
-
-                displayStatus('otpStatus', 'OTP Verified! Registration successful. Loading app...', 'success');
-                // Switch to main app view after short delay
-                setTimeout(() => {
-                    updateUIForSignedInUser(currentUser);
-                    displayStatus('otpStatus', '', null); // Clear OTP status message
-                }, 900);
-
-            } catch (storageError) { // Handle potential errors writing to localStorage
-                console.error("Error saving LOCAL user registration to localStorage:", storageError);
-                displayError('otpError', "Failed to save registration details.");
-                displayStatus('otpStatus', '', null);
-            }
-        }, 1100); // Simulate backend processing time
-
-    } else { // OTP did not match
-        console.log(`Local OTP verification FAILED for: ${signUpData.email}`);
-        displayError('otpError', "Incorrect OTP code entered. Please try again.");
-        if (otpInputEl) otpInputEl.value = ''; // Clear the wrong code
-        displayStatus('otpStatus', '', null); // Clear any status message
-    }
-}
-
-/** Handles submission of the LOCAL email/password login form */
-async function login(event) {
-    event.preventDefault(); // Prevent page reload
-    console.warn("Attempting INSECURE local email/password login...");
-    clearAllErrors(); // Clear previous messages
-
-    // Get credentials from form
-    const email = document.getElementById('loginEmail')?.value.trim();
-    const password = document.getElementById('loginPassword')?.value.trim();
-    const loginErrorEl = document.getElementById('loginError'); // Preferred error display element
-
-    // Basic validation
-    if (!email || !password) {
-        // Use the specific login error element if available, otherwise fallback
-        displayError(loginErrorEl ? 'loginError' : 'loginEmailError', 'Both Email and Password are required.');
-        return;
-    }
-
-    // --- Look up user in localStorage ---
-    try {
-        const users = JSON.parse(localStorage.getItem('clickngoUsers') || '[]');
-        // !!! INSECURE PASSWORD COMPARISON & Only matches local users !!!
-        const user = users.find(u =>
-            u.email === email &&
-            u.password === password && // Direct password comparison is BAD
-            !u.isFirebaseUser          // Ensure it's not a Firebase user trying local login
-        );
-
-        if (user) { // Login successful
-            console.log(`INSECURE local login successful for: ${email}`);
-            displayStatus('authMessage', 'Login successful! Loading dashboard...', 'success');
-            currentUser = user; // Set application state
-            localStorage.setItem('clickngoUser', JSON.stringify(currentUser)); // Persist session locally
-
-            // Simulate loading dashboard
-            setTimeout(() => {
-                 updateUIForSignedInUser(currentUser); // Switch to main app view
-                 displayStatus('authMessage', '', null); // Clear success message after loading
-            }, 1000);
-
-        } else { // Login failed
-            console.log(`INSECURE local login failed for: ${email}`);
-            // Provide generic error message for security
-            displayError(loginErrorEl ? 'loginError' : 'loginEmailError', 'Invalid email or password for a local account.');
-            displayStatus('authMessage', '', null); // Clear any other status messages
-        }
-    } catch(e) {
-        console.error("Error during local login check:", e);
-        displayError(loginErrorEl ? 'loginError' : 'loginEmailError', 'An error occurred during login. Please try again.');
-        displayStatus('authMessage', '', null);
-    }
-}
-// --- End of Insecure Local Auth Section ---
-
-
-// --- User Profile & Admin Functions ---
-
-/** Loads all users (from localStorage) for display in the Admin Panel */
-async function loadAllUsers() {
-    console.log("Admin Action: Loading all users from localStorage...");
-    const allUsersElement = document.getElementById('allUsers');
-    if (!allUsersElement) { console.error("Admin Panel: #allUsers element not found in HTML."); return; }
-
-    allUsersElement.innerHTML = '<div class="loading-message loading">Loading user list...</div>'; // Show loading state
-
-    // Use setTimeout to simulate network/processing delay if data were external
-    setTimeout(() => {
-        try {
-             // Read the list of users directly from local storage
-             const users = JSON.parse(localStorage.getItem('clickngoUsers') || '[]');
-             console.log(`Found ${users.length} users in localStorage for admin view.`);
-             allUsersElement.innerHTML = ''; // Clear loading message
-
-             if (users.length === 0) {
-                 allUsersElement.innerHTML = '<p>No users are currently registered in local storage.</p>';
-                 return; // Stop if no users
-             }
-
-             // Build the list UI
-             const userList = document.createElement('ul');
-             userList.style.listStyleType = 'none'; // Remove default bullets
-             userList.style.paddingLeft = '0'; // Remove default padding
-
-             users.forEach(user => {
-                 const item = document.createElement('li');
-                 item.style.marginBottom = '15px'; // Add vertical space between users
-                 item.style.paddingBottom = '10px'; // Padding before the border
-                 item.style.borderBottom = '1px dotted #ccc'; // Separator
-
-                 // Construct display HTML - AVOID showing passwords!
-                 let userInfoHtml = `
-                    <strong>Email:</strong> ${user.email || 'N/A'}<br>
-                    ${user.displayName ? `<strong>Name:</strong> ${user.displayName}<br>` : ''}
-                    ${user.uid ? `<strong>UID:</strong> <small>${user.uid}</small><br>` : ''}
-                    <strong>Location:</strong> ${user.location || 'N/A'}<br>
-                    <strong>Phone:</strong> ${user.phone || 'N/A'}<br>
-                    <strong>Role:</strong> ${user.role || 'N/A'}<br>
-                    <small>(${user.isFirebaseUser ? 'Firebase Authenticated' : 'Local Email/Password'})</small>
-                 `;
-                 item.innerHTML = userInfoHtml;
-                 userList.appendChild(item);
-             });
-             allUsersElement.appendChild(userList); // Add the complete list to the page
-
-        } catch (e) { // Handle errors during parsing or UI creation
-             console.error("Error loading or displaying users for admin panel:", e);
-             allUsersElement.innerHTML = '<p class="error-message">Error loading user data. Check console.</p>';
-        }
-    }, 400); // Simulate slight delay
-}
-
-/** Handles account deletion for both Firebase and locally stored users */
-async function deleteAccount() {
-    // Check if a user is actually logged in according to the application state
-    if (!currentUser || !currentUser.email) {
-        alert("You must be logged in to delete your account.");
-        return;
-    }
-    console.log(`Deletion requested for account: ${currentUser.email} (Firebase: ${!!currentUser.isFirebaseUser}, UID: ${currentUser.uid || 'N/A'})`);
-
-    // Confirm with the user - this is a destructive action
-    if (!confirm(`ARE YOU SURE you want to permanently delete your account (${currentUser.email})?\n\n!!! THIS ACTION CANNOT BE UNDONE !!!`)) {
-        console.log("Account deletion cancelled by user prompt.");
-        return; // Stop if user cancels confirmation
-    }
-
-    // --- Case 1: Deleting a Firebase Authenticated User ---
-    if (currentUser.isFirebaseUser && currentUser.uid && auth) {
-        console.log("Attempting to delete Firebase user...");
-        const fbUser = auth.currentUser; // Get the currently signed-in user from Firebase SDK
-
-        // Security Check: Ensure the Firebase SDK user matches our application state user
-        if (fbUser && fbUser.uid === currentUser.uid) {
-            try {
-                displayStatus('authMessage', 'Deleting account...', 'loading'); // Show feedback
-                // ** Call the Firebase SDK method to delete the user account **
-                await fbUser.delete();
-                console.log("Firebase user account deleted successfully through SDK.");
-
-                // --- Post-Deletion Cleanup (Local Data) ---
-                console.log("Cleaning up associated local data for deleted Firebase user...");
-                // Remove supplemental data stored locally (ideally this is in a DB cleaned by backend trigger)
-                localStorage.removeItem(`role_${currentUser.uid}`);
-                localStorage.removeItem(`location_${currentUser.uid}`);
-                localStorage.removeItem(`phone_${currentUser.uid}`);
-                // Attempt to remove user from the local 'clickngoUsers' list as well
-                try {
-                     let users = JSON.parse(localStorage.getItem('clickngoUsers') || '[]');
-                     users = users.filter(u => u.uid !== currentUser.uid); // Remove by UID
-                     localStorage.setItem('clickngoUsers', JSON.stringify(users));
-                     console.log("Removed user from 'clickngoUsers' list.");
-                } catch (lsError){ console.warn("Could not clean user from clickngoUsers list:", lsError);}
-
-                alert('Your account and associated application data have been deleted.');
-                // Trigger logout flow to reset UI cleanly
-                logoutFirebase(); // This handles clearing currentUser, LS session, and UI reset
-
-            } catch (error) { // Handle errors during Firebase deletion
-                console.error("Error deleting Firebase user account:", error);
-                 displayStatus('authMessage', '', null); // Clear loading message
-                // Check for common errors, especially needing recent login
-                if (error.code === 'auth/requires-recent-login') {
-                     alert("Deleting your account is a sensitive operation and requires you to have signed in recently.\n\nPlease sign in again with Google, then immediately try deleting your account again.");
-                     // Optional: Trigger re-authentication? Less intuitive for deletion flow maybe.
-                     // signInWithGoogleFirebase().then(() => deleteAccount()); // Could lead to loops if fails again
-                } else {
-                     alert(`An error occurred while deleting your account: ${error.message}\nPlease try again or contact support.`);
-                }
-                // Do not proceed with local cleanup if Firebase deletion failed
-            }
-             return; // Stop processing after Firebase attempt (success or fail)
-        } else {
-            // If Firebase state doesn't match app state, something is wrong. Prevent deletion.
-             console.error("Account Deletion Halted: Mismatch between application user state and Firebase Auth state. Cannot securely delete.");
-             alert("Authentication mismatch error. Cannot securely delete the account. Please log out fully and log back in, then try again.");
-             return; // Stop
-        }
-    }
-
-    // --- Case 2: Deleting an INSECURE Local Email/Password User ---
-    else if (!currentUser.isFirebaseUser && currentUser.email) {
-         console.warn(`Attempting deletion of INSECURE local user: ${currentUser.email}`);
-         try {
-             // Remove the user from the primary user list in localStorage
-             let users = JSON.parse(localStorage.getItem('clickngoUsers') || '[]');
-             const initialLength = users.length;
-             // Filter out based on email AND the local user flag
-             users = users.filter(user => !(user.email === currentUser.email && !user.isFirebaseUser));
-
-             if (users.length < initialLength) {
-                localStorage.setItem('clickngoUsers', JSON.stringify(users));
-                console.log("Local user removed from 'clickngoUsers' list in localStorage.");
-                alert('Local account data removed.');
-                logoutFirebase(); // Use standard logout to clear state and reset UI
-             } else {
-                 // Should not happen if currentUser was set correctly, but handle defensively
-                 console.warn("Local user to be deleted was not found in the localStorage list.");
-                 alert('Could not find local user data to delete.');
-                 logoutFirebase(); // Still log out
-             }
-
-         } catch (e) {
-             console.error("Error deleting local account from localStorage:", e);
-             alert("An error occurred while removing local account data.");
-             logoutFirebase(); // Attempt logout anyway
-         }
-    }
-
-    // --- Case 3: Inconsistent State (Shouldn't normally reach here) ---
-    else {
-        console.error("Cannot delete account: User state is invalid or inconsistent.", currentUser);
-        alert("Cannot delete account due to an internal state error. Please refresh or contact support.");
-    }
-}
-
-
-// --- Placeholders for user prompts (replace with modal/form UI) ---
-function promptUserForRole(name) {
-    console.warn("Using basic prompt for ROLE - Replace with better UI!");
-    let role = prompt(`Welcome ${name || 'User'}! Select role: 'customer' or 'driver'?`, "customer");
-    role = role?.trim().toLowerCase();
-    return (role === 'customer' || role === 'driver' || role === 'admin') ? role : 'customer';
-}
-function promptUserForLocation() {
-    console.warn("Using basic prompt for LOCATION - Replace with better UI!");
-    return prompt("Enter main city/location:", "") || "Not Set";
-}
-function promptUserForPhone() {
-    console.warn("Using basic prompt for PHONE - Replace with better UI!");
-    let phone = prompt("Enter phone (optional):", "");
-    // Add basic validation if desired, e.g., check if mostly digits
-    return phone || "N/A";
-}
+// --- Prompts (Replace with UI Modals) ---
+function promptUserForRole(name){console.warn("Using PROMPT for Role!");let r=prompt(`Welcome ${name||'User'}! Role: customer, driver, admin?`,"customer"); r=r?.trim().toLowerCase();return ['customer','driver','admin'].includes(r)?r:'customer';}
+function promptUserForLocation(){console.warn("Using PROMPT for Location!");return prompt("Enter city/location:","")||"Not Set";}
+function promptUserForPhone(){console.warn("Using PROMPT for Phone!");let p=prompt("Phone (optional):","");return p||"N/A";}
 
 // --- Feature Functions ---
+// [simulateOrder, showOrderHistory, updateTracking remain the same - local storage based demos]
+function simulateOrder() { if (!currentUser) { alert("Log in."); return; } console.log(`Simulating order: ${currentUser.email}`); try { let o=JSON.parse(localStorage.getItem('orders')||'[]');const n={orderId:`CNG-${Date.now().toString().slice(-7)}`,userEmail:currentUser.email,userId:currentUser.uid,date:new Date().toLocaleString(),items:"Simulated Item",status:"Pending",location:currentUser.location};o.push(n);localStorage.setItem('orders',JSON.stringify(o)); alert('Demo Order Placed!'); showOrderHistory(); updateTracking(n.orderId); if(document.getElementById('orderItemsSection').style.display==='none') switchSection('orderItemsSection');} catch(e){console.error("SimOrder Error:",e);alert("Order demo failed.");}}
+function showOrderHistory() { console.log("Show history:", currentUser?.email); const el=document.getElementById('orderList'); if(!el) return; if(document.getElementById('orderHistorySection').style.display==='none') switchSection('orderHistorySection'); el.innerHTML='Loading...'; setTimeout(()=>{ try {const a=JSON.parse(localStorage.getItem('orders')||'[]');const u=currentUser?.role==='admin'?a:a.filter(o=>o.userEmail===currentUser?.email || (currentUser?.uid && o.userId===currentUser?.uid)); el.innerHTML=''; if(u.length===0){el.innerHTML='<p>No history.</p>';}else{u.sort((a,b)=>(new Date(b.date)||0)-(new Date(a.date)||0));u.forEach(o=>{const i=document.createElement('div');i.className='order-history-item';const s=`status-${(o.status||'?').toLowerCase().replace(/\s+/g,'-')}`;i.innerHTML=`<h4>#${o.orderId||'?'}</h4><p><strong>Date:</strong> ${o.date||'?'}</p><p><strong>Items:</strong> ${o.items||'?'}</p><p><strong>Status:</strong> <span class="${s}">${o.status||'?'}</span></p>${currentUser?.role==='admin'?`<p><small>User: ${o.userEmail||o.userId||'?'} (${o.location||'?'})</small></p>`:''}<hr style='border:0;border-top:1px dashed #eee;margin:8px 0;'>`; el.appendChild(i);});}} catch(e){console.error("History load error:",e); el.innerHTML='<p class="error">History load fail.</p>';}}, 300);}
+function updateTracking(orderId) { console.log(`SimTrack: ${orderId}`); const el=document.getElementById('trackingPanel'); if(!el) return; if(window.currentTrackingInterval){clearInterval(window.currentTrackingInterval);window.currentTrackingInterval=null;} if(!orderId){el.innerHTML='Place/select order.';return;} el.innerHTML=`Loading ${orderId}...`; setTimeout(()=>{ const o=JSON.parse(localStorage.getItem('orders')||'[]'); const order=o.find(ord=>ord.orderId===orderId); if(!order){el.innerHTML=`<p class="error">Order ${orderId} not found.</p>`; return;} el.innerHTML=`<h4>Track: ${orderId}</h4><p id="trackingStatusDisplay">Status: ...</p>`; const disp=document.getElementById('trackingStatusDisplay'); if(!disp)return; const stages=["Pending","Driver Assigned","Picking Up","On the Way","Delivered"]; let c=stages.indexOf(order.status); if(c<0)c=0; const upd=(idx)=>{const n=stages[idx],l=idx>=stages.length-1,s=`status-${n.toLowerCase().replace(/\s+/g,'-')}`;disp.innerHTML=`Status: <strong class="${s}">${n}${l?'':'...'}</strong>`;}; upd(c); if(c>=stages.length-1){console.log("Track stop: Delivered.");return;} window.currentTrackingInterval=setInterval(()=>{ c++;upd(c); try{let ls=JSON.parse(localStorage.getItem('orders')||'[]');let uls=ls.map(lso=>(lso.orderId===orderId?{...lso, status: stages[c]}:lso));localStorage.setItem('orders',JSON.stringify(uls));}catch(e){} if(c>=stages.length-1){console.log(`Track ${orderId} end: Delivered.`);clearInterval(window.currentTrackingInterval);window.currentTrackingInterval=null; if(document.getElementById('orderHistorySection')?.style.display==='block') showOrderHistory();}}, 5000 + Math.random() * 5000);}, 600);}
 
-/** Simulates placing an order, saves to localStorage */
-function simulateOrder() {
-     if (!currentUser) { alert("Please log in first."); return; }
-     console.log(`Simulating order placement by: ${currentUser.email}`);
-    try {
-        let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        const newOrder = {
-            orderId: `CNG-${Date.now().toString().slice(-7)}`, // Unique enough ID for demo
-            userEmail: currentUser.email,
-            userId: currentUser.uid, // Link to Firebase UID if available
-            date: new Date().toLocaleString(), // Record time of order
-            items: "Simulated Item(s) via Button",
-            status: "Pending", // Initial state
-            location: currentUser.location // User's location when order placed
-        };
-        orders.push(newOrder); // Add to array
-        localStorage.setItem('orders', JSON.stringify(orders)); // Save updated list
+// --- Realtime Chat Functions (Firebase RTDB) ---
 
-        alert('Demo Order Placed! Check history/tracking.');
-        // Update UI immediately
-        showOrderHistory();
-        updateTracking(newOrder.orderId); // Start tracking simulation
-        // Ensure the orders section is visible to see the tracking
-        if(document.getElementById('orderItemsSection').style.display === 'none'){
-            switchSection('orderItemsSection');
+/** Sets up the listener for new chat messages with detailed logging */
+function setupChatListener() {
+    // Ensure preconditions are met
+    if (!currentUser || !chatMessagesRef || !db) {
+        console.warn("setupChatListener PREVENTED: User:", !!currentUser, "DB Ref:", !!chatMessagesRef, "DB Inst:", !!db);
+        const messagesDiv = document.getElementById('chatMessages');
+        if (messagesDiv) messagesDiv.innerHTML = '<p class="error-message">Cannot connect to chat. Please log in.</p>';
+        return;
+    }
+
+    // Avoid duplicate listeners
+    if (chatListenerUnsubscribe) {
+        console.log("Chat listener is already active. Skipping setup.");
+        return;
+    }
+
+    console.log("Attempting to setup Firebase RTDB listener for chat at:", chatMessagesRef.toString()); // Log the DB path
+    const messagesDiv = document.getElementById('chatMessages');
+    if (!messagesDiv) {
+        console.error("FATAL: Chat messages display element (#chatMessages) not found during listener setup.");
+        return;
+    }
+    messagesDiv.innerHTML = '<p class="loading-message loading">Attaching listener and loading chat...</p>'; // Indicate attaching
+
+    // Attach the listener using onValue
+    chatListenerUnsubscribe = onValue(chatMessagesRef, (snapshot) => {
+        console.log("%c Firebase onValue triggered!", "color: green; font-weight: bold;"); // Log when callback fires
+        console.log("Snapshot exists:", snapshot.exists());
+
+        // Check if currentUser is still valid *inside* the callback (essential for async)
+        console.log("currentUser inside onValue:", currentUser);
+        if (!currentUser || !currentUser.uid) {
+             console.error("currentUser became invalid/null inside the onValue callback! Cannot reliably determine message ownership.");
+             // Optionally display an error in the chat or detach
+             // const currentMessagesDiv = document.getElementById('chatMessages');
+             // if (currentMessagesDiv) currentMessagesDiv.innerHTML = '<p class="error-message">Session error during chat. Refresh may be needed.</p>';
+             // detachChatListener(); // Detach if user session is lost
+             // return; // Stop processing this snapshot if user context is lost
         }
-    } catch (e) { console.error("simulateOrder Error:", e); alert("Error placing demo order."); }
-}
 
-/** Loads and displays order history from localStorage */
-function showOrderHistory() {
-    console.log("Displaying order history for:", currentUser?.email);
-    const orderListEl = document.getElementById('orderList');
-    if (!orderListEl) { console.error("Order history element (#orderList) missing."); return; }
+        // Get the chat messages display element again safely
+        const currentMessagesDiv = document.getElementById('chatMessages');
+         if (!currentMessagesDiv) {
+             console.error("Chat messages element #chatMessages disappeared unexpectedly!");
+             return; // Can't proceed without the container
+         }
+        currentMessagesDiv.innerHTML = ''; // Clear previous messages / loading indicator
 
-    // Navigate to the section if not already there (helpful if called programmatically)
-     if(document.getElementById('orderHistorySection').style.display === 'none'){
-        switchSection('orderHistorySection');
-     }
+        if (!snapshot.exists()) {
+            console.log("Snapshot is empty. Displaying 'No messages yet'.");
+            currentMessagesDiv.innerHTML = '<p><i>No messages yet. Start the conversation!</i></p>';
+            return; // Stop processing if there's no data
+        }
 
-    orderListEl.innerHTML = '<div class="loading-message loading">Loading history...</div>'; // Show loading state
+        const messages = snapshot.val(); // Get the data object
+        console.log("Raw messages data received from Firebase:", messages); // Log the raw data
 
-    setTimeout(() => { // Simulate fetch delay
+        let messageCount = 0; // Counter for processed messages
         try {
-            const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-             // Filter based on current user (allow Admin to see all)
-             const userOrders = currentUser?.role === 'admin'
-                 ? allOrders
-                 : allOrders.filter(order => order.userEmail === currentUser?.email || (currentUser?.uid && order.userId === currentUser?.uid));
+            // Get message keys, sort them by timestamp (handle missing timestamps gracefully)
+            const sortedKeys = Object.keys(messages).sort((a, b) => (messages[a]?.timestamp || 0) - (messages[b]?.timestamp || 0));
+            console.log(`Found ${sortedKeys.length} message keys. Processing...`);
 
-            console.log(`Found ${userOrders.length} orders for display.`);
-            orderListEl.innerHTML = ''; // Clear loading
+            sortedKeys.forEach(key => {
+                const messageData = messages[key];
+                console.log(`Processing message key: ${key}`, messageData); // Log each message being processed
 
-            if (userOrders.length === 0) {
-                orderListEl.innerHTML = `<p>No order history found.</p>`;
-            } else {
-                // Sort newest first before displaying
-                 userOrders.sort((a, b) => (new Date(b.date) || 0) - (new Date(a.date) || 0)); // Attempt date sort
-                 userOrders.forEach(order => { // Display each order
-                     const item = document.createElement('div');
-                     item.classList.add('order-history-item');
-                     const statusClass = `status-${(order.status || 'unknown').toLowerCase().replace(/\s+/g, '-')}`;
-                     item.innerHTML = `
-                         <h4>Order #${order.orderId || 'N/A'}</h4>
-                         <p><strong>Date:</strong> ${order.date || 'N/A'}</p>
-                         <p><strong>Details:</strong> ${order.items || 'N/A'}</p>
-                         <p><strong>Status:</strong> <span class="${statusClass}">${order.status || 'Unknown'}</span></p>
-                         ${currentUser?.role === 'admin' ? `<p><small>User: ${order.userEmail || order.userId || '?'}, Loc: ${order.location || '?'}</small></p>` : ''}
-                         <hr style='border:0; border-top: 1px dashed #eee; margin-top: 8px;'>
-                     `;
-                     orderListEl.appendChild(item);
-                 });
-            }
-        } catch (e) { console.error("Order history load/parse error:", e); orderListEl.innerHTML = `<p class="error-message">Could not load history.</p>`; }
-    }, 300);
-}
+                // **Robustness Check**: Ensure essential data exists
+                if (!messageData || typeof messageData.text !== 'string' || typeof messageData.senderUid !== 'string') {
+                    console.warn(`Skipping message key ${key} due to missing/invalid essential data (text or senderUid):`, messageData);
+                    return; // Skip rendering this malformed message
+                }
 
-/** Simulates order tracking progress in the UI */
-function updateTracking(orderId) {
-    console.log(`Simulating tracking for order: ${orderId}`);
-    const trackingPanel = document.getElementById('trackingPanel');
-    if (!trackingPanel) { console.error("Tracking panel element missing."); return; }
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
 
-    // Clear previous tracking interval if any
-    if (window.currentTrackingInterval) {
-        console.log("Clearing previous tracking interval.");
-        clearInterval(window.currentTrackingInterval);
-        window.currentTrackingInterval = null;
-    }
+                // Determine if the message is 'own' or 'incoming' using safe access to currentUser
+                if (messageData.senderUid === currentUser?.uid) {
+                    messageElement.classList.add('own');
+                    messageElement.textContent = messageData.text;
+                } else {
+                    messageElement.classList.add('incoming');
+                    const senderDisplayName = messageData.senderName || 'Unknown'; // Graceful fallback for sender name
+                    messageElement.innerHTML = `<strong>${senderDisplayName}:</strong> ${messageData.text}`;
+                }
 
-    if (!orderId) { // Handle case where function called without an ID
-        trackingPanel.innerHTML = `<p>Place an order or select from history to track.</p>`; return;
-    }
-
-    trackingPanel.innerHTML = `<div class="loading-message loading"> Searching for order ${orderId}...</div>`;
-
-    setTimeout(() => { // Simulate finding order data
-        const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-        const order = orders.find(o => o.orderId === orderId);
-
-        if (!order) { trackingPanel.innerHTML = `<p class="error-message">Order ${orderId} not found.</p>`; return; }
-
-        // Prepare UI elements for tracking status
-        trackingPanel.innerHTML = `<h4>Tracking Order: ${orderId}</h4><p id="trackingStatusDisplay">Status: Initializing...</p>`;
-        const statusDisplay = document.getElementById('trackingStatusDisplay');
-        if (!statusDisplay) return;
-
-        const stages = ["Pending", "Driver Assigned", "Picking Up", "On the Way", "Delivered"];
-        let currentStageIndex = stages.indexOf(order.status);
-        if (currentStageIndex < 0) currentStageIndex = 0; // Default to first stage
-
-        // Function to update the status display text and style
-        const updateStatusDisplay = (stageIdx) => {
-            const stageName = stages[stageIdx];
-            const isLastStage = stageIdx >= stages.length - 1;
-            const statusClass = `status-${stageName.toLowerCase().replace(/\s+/g, '-')}`;
-            statusDisplay.innerHTML = `Status: <strong class="${statusClass}">${stageName}${isLastStage ? '' : '...'}</strong>`;
-        };
-
-        updateStatusDisplay(currentStageIndex); // Show current status immediately
-
-        if (currentStageIndex >= stages.length - 1) { console.log("Tracking stopped: Order already delivered."); return; } // Stop if delivered
-
-        // Set interval to simulate progress
-        window.currentTrackingInterval = setInterval(() => {
-            currentStageIndex++;
-            updateStatusDisplay(currentStageIndex); // Update UI
-
-            // Persist status update to localStorage (optional)
-             try { let lsOrders=JSON.parse(localStorage.getItem('orders')||'[]'); let updatedLs=lsOrders.map(o=>(o.orderId===orderId?{...o, status: stages[currentStageIndex]}:o)); localStorage.setItem('orders', JSON.stringify(updatedLs)); } catch(e) {console.warn("LS update during tracking fail:",e)}
-
-            if (currentStageIndex >= stages.length - 1) { // Check if delivered
-                console.log(`Tracking simulation for ${orderId} reached final stage: Delivered.`);
-                clearInterval(window.currentTrackingInterval); // Stop interval
-                window.currentTrackingInterval = null;
-                // Optionally show history again to reflect final status
-                 if (document.getElementById('orderHistorySection')?.style.display === 'block') {
-                     showOrderHistory();
+                // Add timestamp if available
+                 if (typeof messageData.timestamp === 'number') {
+                    const timestampSpan = document.createElement('span');
+                    timestampSpan.classList.add('message-timestamp');
+                    try {
+                         // Format timestamp into readable time
+                        timestampSpan.textContent = new Date(messageData.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    } catch (e) {
+                       console.warn("Failed to format timestamp for message key:", key, messageData.timestamp, e);
+                    }
+                    messageElement.appendChild(timestampSpan);
                  }
-            }
-        }, 5000 + Math.random() * 5000); // Random delay 5-10 seconds per stage
 
-    }, 600); // Short delay to "find" order
+                currentMessagesDiv.appendChild(messageElement);
+                messageCount++;
+            });
+
+            console.log(`Successfully processed and displayed ${messageCount} messages.`);
+
+            // Scroll to the bottom of the chat window
+            currentMessagesDiv.scrollTop = currentMessagesDiv.scrollHeight;
+
+        } catch (error) {
+            // Catch errors during the message processing loop
+            console.error("Error occurred WHILE PROCESSING/RENDERING messages:", error);
+             if(currentMessagesDiv) currentMessagesDiv.innerHTML = '<p class="error-message">Error displaying messages. Check console.</p>';
+        }
+
+    }, (error) => {
+        // Handle errors during the initial connection or subsequent reads
+        console.error("%c Firebase RTDB onValue read error:", "color: red; font-weight: bold;", error);
+        const currentMessagesDiv = document.getElementById('chatMessages');
+        if (currentMessagesDiv) {
+            // Display a user-friendly error message
+            currentMessagesDiv.innerHTML = `<p class="error-message">Error loading chat (${error.code || 'Unknown error'}). Check Rules/Connection.</p>`;
+        }
+        // Detach the listener on a read error to prevent repeated failures?
+         detachChatListener();
+    });
+
+    console.log("Chat listener attach function (onValue) registration complete.");
 }
 
-/** Adds user message to demo chat and simulates a reply */
+
+/** Detaches the Firebase listener and logs the action */
+function detachChatListener() {
+    // Log if detachment is attempted
+    if (chatListenerUnsubscribe) {
+        console.log("<<<< Detaching Firebase Realtime Database chat listener. >>>>");
+        chatListenerUnsubscribe(); // Execute the unsubscribe function
+        chatListenerUnsubscribe = null; // Clear the reference
+    } else {
+        // console.log("No active chat listener to detach."); // Optional: Log if no listener was active
+    }
+}
+
+/** Sends a message to Firebase RTDB */
 function sendMessage() {
     const input = document.getElementById('chatInput');
-    const messagesDiv = document.getElementById('chatMessages');
-    if (!input || !messagesDiv) return; // Check if elements exist
-
+    if (!input) { console.error("Chat input element #chatInput not found."); return; }
     const messageText = input.value.trim();
-    if (!messageText) return; // Ignore empty input
 
-    console.log("Demo chat: Sending message:", messageText);
-    // Display user's message
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message', 'own');
-    messageElement.textContent = messageText;
-    messagesDiv.appendChild(messageElement);
+    // --- Pre-send Validations ---
+    if (!currentUser || !currentUser.uid || !currentUser.displayName) {
+        console.warn("SendMessage Prevented: User not fully logged in or profile incomplete.", currentUser);
+        alert("You must be logged in with a valid profile to send messages.");
+        return;
+    }
+    if (!db || !chatMessagesRef) {
+         console.error("SendMessage Prevented: Database service/reference not available.");
+         alert("Chat service is temporarily unavailable.");
+         return;
+    }
+    if (!messageText) {
+        console.log("Empty chat message ignored.");
+        return; // Do not send empty messages
+    }
+    // --- End Validations ---
 
-    input.value = ''; // Clear input field
-    messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll down
+    console.log(`Sending chat message as ${currentUser.displayName} (UID: ${currentUser.uid}): "${messageText}"`);
 
-    // Simulate receiving a reply
-    setTimeout(() => {
-         console.log("Demo chat: Simulating reply...");
-         const replyText = `Roger that! Your message: "${messageText.substring(0, 25)}${messageText.length > 25 ? '...' : ''}" was received.`;
-         const replyElement = document.createElement('div');
-         replyElement.classList.add('message', 'incoming');
-         replyElement.textContent = replyText;
-         messagesDiv.appendChild(replyElement);
-         messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }, 1500 + Math.random() * 1500); // Random delay for reply
+    // Prepare message data object
+    const messageData = {
+        text: messageText,
+        senderUid: currentUser.uid,
+        senderName: currentUser.displayName, // Use verified display name
+        timestamp: serverTimestamp() // Use reliable server time
+    };
+
+    // Generate a unique ID and save the message
+    const newMessageRef = push(chatMessagesRef); // Creates ref like /chats/mainRoom/-Mxyz...
+    set(newMessageRef, messageData)
+        .then(() => {
+            console.log("Message sent successfully to RTDB path:", newMessageRef.toString());
+            input.value = ''; // Clear input field *only* on successful send
+            input.focus(); // Set focus back to input for convenience
+        })
+        .catch((error) => {
+            console.error("Error sending message to Firebase RTDB:", error);
+            alert(`Failed to send message: ${error.message}. Check DB Rules.`);
+            // Do not clear input on error, allowing user retry
+        });
+     // NOTE: The 'onValue' listener will automatically pick up and display this message.
 }
 
-/** Handles submission of the feedback form */
-function submitFeedback(event) {
-    event.preventDefault();
-    if (!currentUser) { alert("Please log in first."); return; }
-    const messageInput = document.getElementById('feedbackMessage');
-    const statusEl = document.getElementById('feedbackStatus');
-    if (!messageInput || !statusEl) return;
-    const message = messageInput.value.trim();
-    if (!message) { displayStatus('feedbackStatus', 'Message cannot be empty.', 'error'); return; }
-
-    console.log(`Submitting feedback from ${currentUser.email}`);
-    displayStatus('feedbackStatus', 'Sending...', 'loading');
-
-    setTimeout(() => { // Simulate saving feedback
-        try {
-            const feedbacks = JSON.parse(localStorage.getItem('feedbackMessages') || '[]');
-            feedbacks.push({ userEmail: currentUser.email, userId: currentUser.uid, message, timestamp: new Date().toISOString() });
-            localStorage.setItem('feedbackMessages', JSON.stringify(feedbacks));
-            console.log("Feedback saved to localStorage.");
-            displayStatus('feedbackStatus', 'Feedback Sent! Thanks.', 'success');
-            messageInput.value = ''; // Clear form
-            notifyUser("We received your feedback!"); // Browser notification
-            setTimeout(() => displayStatus('feedbackStatus', '', null), 4000); // Clear success msg
-        } catch (e) { console.error("Feedback save error:", e); displayStatus('feedbackStatus', 'Error saving feedback.', 'error'); }
-    }, 1200);
-}
+// ... (submitFeedback unchanged) ...
+function submitFeedback(event) { event.preventDefault(); if (!currentUser) { alert("Log in first."); return; } const i=document.getElementById('feedbackMessage'), s=document.getElementById('feedbackStatus'); if(!i||!s) return; const m=i.value.trim(); if (!m) { displayStatus('feedbackStatus', 'Empty message.', 'error'); return; } console.log(`Feedback from ${currentUser.email}`); displayStatus('feedbackStatus', 'Sending...', 'loading'); setTimeout(() => { try { const f = JSON.parse(localStorage.getItem('feedbackMessages') || '[]'); f.push({ userEmail: currentUser.email, userId: currentUser.uid, message:m, timestamp: new Date().toISOString() }); localStorage.setItem('feedbackMessages', JSON.stringify(f)); console.log("Feedback saved to LS."); displayStatus('feedbackStatus', 'Sent! Thanks.', 'success'); i.value = ''; notifyUser("Feedback received!"); setTimeout(() => displayStatus('feedbackStatus', '', null), 4000); } catch (e) { console.error("Feedback save error:", e); displayStatus('feedbackStatus', 'Error saving.', 'error'); } }, 1200); }
 
 // --- Settings & Preferences ---
-
-/** Loads theme and language preferences from localStorage */
-function loadPreferences() {
-    console.log("Loading preferences...");
-    try {
-        const prefs = JSON.parse(localStorage.getItem('userPreferences') || '{}');
-        // Apply Language
-        const langSelect = document.getElementById('languageSelect');
-        if (langSelect && prefs.language) langSelect.value = prefs.language; // Update dropdown
-        // Apply Theme
-        const theme = prefs.theme || 'light';
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        document.body.classList.toggle('dark-mode', theme === 'dark'); // Set body class
-        if (darkModeToggle) darkModeToggle.checked = (theme === 'dark'); // Update checkbox
-        console.log("Preferences applied:", prefs);
-    } catch (e) { console.error("Failed to load preferences:", e); }
-}
-
-/** Saves theme and language preferences to localStorage */
-function savePreferences() {
-    const statusEl = document.getElementById('userPreferencesStatus');
-    console.log("Saving preferences...");
-    if(statusEl) displayStatus('userPreferencesStatus', 'Saving...', 'loading');
-
-    setTimeout(() => { // Simulate save
-         try {
-            const prefs = {
-                language: document.getElementById('languageSelect')?.value || 'en',
-                theme: document.getElementById('darkModeToggle')?.checked ? 'dark' : 'light'
-            };
-            localStorage.setItem('userPreferences', JSON.stringify(prefs));
-            console.log("Preferences Saved:", prefs);
-            if(statusEl) displayStatus('userPreferencesStatus', 'Preferences Saved!', 'success');
-            setTimeout(() => displayStatus('userPreferencesStatus', '', null), 2500); // Clear msg
-         } catch (e) { console.error("Failed to save preferences:", e); if(statusEl) displayStatus('userPreferencesStatus','Error saving.','error');}
-    }, 400);
-}
-
-/** Toggles dark mode UI and saves the preference */
-function toggleDarkMode() {
-    const isNowDark = document.body.classList.toggle('dark-mode');
-    console.log(`Dark Mode toggled ${isNowDark ? 'ON' : 'OFF'}.`);
-    const checkbox = document.getElementById('darkModeToggle');
-    if (checkbox) checkbox.checked = isNowDark; // Sync checkbox state
-    savePreferences(); // Persist the change
-}
+// [loadPreferences, savePreferences, toggleDarkMode unchanged - uses localStorage]
+function loadPreferences() { try{const p=JSON.parse(localStorage.getItem('userPreferences')||'{}'); const l=document.getElementById('languageSelect');if(l&&p.language)l.value=p.language; const t=p.theme||'light'; const d=document.getElementById('darkModeToggle'); document.body.classList.toggle('dark-mode',t==='dark'); if(d)d.checked=(t==='dark'); console.log("Prefs loaded:",p);}catch(e){console.error("Prefs load fail:",e);}}
+function savePreferences() { const s=document.getElementById('userPreferencesStatus'); if(s) displayStatus('userPreferencesStatus','Saving...','loading'); setTimeout(()=>{try{const p={language:document.getElementById('languageSelect')?.value||'en',theme:document.getElementById('darkModeToggle')?.checked?'dark':'light'}; localStorage.setItem('userPreferences',JSON.stringify(p)); console.log("Prefs saved:",p); if(s) displayStatus('userPreferencesStatus','Saved!','success'); setTimeout(()=>displayStatus('userPreferencesStatus','',null), 2500);}catch(e){console.error("Prefs save fail:",e);if(s)displayStatus('userPreferencesStatus','Error.','error');}},400);}
+function toggleDarkMode() { const d = document.body.classList.toggle('dark-mode'); console.log(`Dark Mode ${d ? 'ON' : 'OFF'}.`); const c = document.getElementById('darkModeToggle'); if (c) c.checked = d; savePreferences(); }
 
 // --- Utility Functions ---
-
-/** Loads FAQ content into the #faqList element */
-function loadFaq() {
-    console.log("Loading FAQ content...");
-    const listEl = document.getElementById('faqList');
-    if (!listEl) { console.error("FAQ list element '#faqList' not found!"); return; }
-    listEl.innerHTML = ''; // Clear placeholder/old content
-
-    const faqItems = [ // Central place for FAQ data
-        { q: "What services are offered?", a: "We provide 12-hour motor-taxi (habal-habal) and delivery (pabili/padala) services within our operating area." },
-        { q: "How do I book a service?", a: "Currently, all bookings are done through direct message on our official Facebook page. The link is available in the 'Orders' section." },
-        { q: "How can I contact support?", a: "Reach out via email at clickngoservice@gmail.com, text/call 0916 554 0988, or message our Facebook page." },
-        { q: "What are the service hours?", a: "We generally operate for 12 hours each day. Please refer to our Facebook page for the most current specific operating times." },
-        { q: "How much does it cost?", a: "Pricing varies based on the type of service (ride vs. delivery) and the distance involved. Please ask for a quote when you book via Facebook message." }
-    ];
-
-    if (faqItems.length === 0) { listEl.innerHTML = '<p>No FAQs available at the moment.</p>'; return; }
-
-    faqItems.forEach(faq => {
-        const item = document.createElement('div');
-        item.classList.add('faq-item'); // Apply styling class
-        // Create elements and set textContent safely
-        const questionP = document.createElement('p');
-        questionP.classList.add('faq-question');
-        questionP.innerHTML = '<strong>Q:</strong> '; // Use innerHTML only for static tags
-        questionP.appendChild(document.createTextNode(faq.q));
-
-        const answerP = document.createElement('p');
-        answerP.classList.add('faq-answer');
-        answerP.innerHTML = '<strong>A:</strong> ';
-        answerP.appendChild(document.createTextNode(faq.a));
-
-        item.appendChild(questionP);
-        item.appendChild(answerP);
-        listEl.appendChild(item); // Add the completed FAQ item to the list
-    });
-    console.log(`Loaded ${faqItems.length} FAQ items.`);
-}
-
-/** Safely set element text content */
-function setText(id, text, defaultTxt = "N/A") { const el=document.getElementById(id); if(el) el.textContent = text || defaultTxt; }
-/** Safely set element innerHTML */
-function setTextHTML(id, html, defaultHtml = "") { const el=document.getElementById(id); if(el) el.innerHTML = html || defaultHtml; }
-/** Update clock display */
-function updateClock() { const el=document.getElementById('clockDisplay'); if(el)el.innerText=new Date().toLocaleTimeString([],{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});}
-/** Display greeting based on time */
+// [loadFaq, setText, setTextHTML, updateClock, displayWelcomeMessage, clearInput, isValidEmail, isValidPhoneNumber, notifyUser, displayStatus, displayError, clearAllErrors unchanged]
+function loadFaq() { const el=document.getElementById('faqList'); if(!el) return; el.innerHTML=''; const f=[ { q: "Services?", a: "Click n Go is an on-demand delivery service located in Isok 1 Boac, Marinduque that offers fast and affordable transportation services. Click n' Go ownership status is corporation who work as a team. Our service allows customer to easily book a delivery whether it's food, groceries, packages, or any other type of delivery through user friendly mobile-app or website and have it delivered by our driver. This app connects users with local couriers in real-time, ensuring fast, reliable, and cost-effective services." }, { q: "Booking?", a: "Via Facebook page DM (link in Orders)." }, { q: "Support?", a: "Email clickngoservice@gmail.com, call 09165540988, or FB msg." }, { q: "Hours?", a: "Usually 12hrs daily. Check FB for specifics." }, { q: "Cost?", a: "Varies. Ask for quote on FB." }]; if(f.length===0){el.innerHTML='<p>No FAQs.</p>';return;} f.forEach(fq=>{ const i=document.createElement('div');i.className='faq-item'; const qp=document.createElement('p');qp.className='faq-question';qp.innerHTML='<strong>Q:</strong> '; qp.appendChild(document.createTextNode(fq.q)); const ap=document.createElement('p');ap.className='faq-answer';ap.innerHTML='<strong>A:</strong> '; ap.appendChild(document.createTextNode(fq.a)); i.appendChild(qp);i.appendChild(ap);el.appendChild(i);}); console.log(`Loaded ${f.length} FAQs.`);}
+function setText(id, txt, d = "N/A") { const el=document.getElementById(id); if(el) el.textContent = txt || d; }
+function setTextHTML(id, h, d = "") { const el=document.getElementById(id); if(el) el.innerHTML = h || d; }
+function updateClock() { const el=document.getElementById('clockDisplay'); if(el) el.innerText=new Date().toLocaleTimeString([],{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 function displayWelcomeMessage() { const el=document.getElementById('welcomeMessage'); if(!el)return; const h=new Date().getHours();let m="evening";if(h<5)m="night";else if(h<12)m="morning";else if(h<18)m="afternoon"; el.innerText=`Good ${m}!`; }
-/** Clear input field and associated error */
-function clearInput(id) { const el=document.getElementById(id); if(el)el.value=''; displayError(id+'Error',''); }
-/** Basic email validation */
-function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email||'').toLowerCase()); }
-/** Basic phone number validation */
-function isValidPhoneNumber(phone) { const c=String(phone||'').replace(/\D/g, ''); return /^\+?\d{7,15}$/.test(c); } // Allow 7-15 digits, optional +
-/** Trigger browser notification */
-function notifyUser(msg) { if(!('Notification'in window))return; Notification.requestPermission().then(p=>{if(p==='granted')new Notification('Click n Go!',{body:msg})}); }
-/** Display status messages with styling */
+function clearInput(id) { const el=document.getElementById(id); if(el) el.value=''; displayError(id+'Error',''); }
+function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(e||'').toLowerCase()); }
+function isValidPhoneNumber(p) { return /^\+?\d{7,15}$/.test(String(p||'').replace(/\D/g, '')); }
+function notifyUser(m){if(!('Notification'in window))return; Notification.requestPermission().then(p=>{if(p==='granted')new Notification('Click n Go',{body:m})});}
 function displayStatus(id, msg, type=null) { const el=document.getElementById(id); if(!el)return; el.innerText=msg||''; el.className='status-message'; if(type==='loading')el.classList.add('loading-message','loading'); else if(type==='success')el.classList.add('success'); else if(type==='error')el.classList.add('error-message'); }
-/** Display error messages */
-function displayError(id, msg) { const el=document.getElementById(id); if(el){el.innerText=msg||'';el.classList.add('error-message');}}
-/** Clear common error/status fields */
-function clearAllErrors() { ['signUpEmailError','signUpPasswordError','signUpLocationError','signUpPhoneError','signUpRoleError','loginError','loginEmailError','loginPasswordError','otpError'].forEach(id=>displayError(id,'')); ['otpStatus','feedbackStatus','userPreferencesStatus','authMessage'].forEach(id=>displayStatus(id,'',null)); console.log("Cleared common errors/statuses."); }
-/** Reset forms, clear errors, show login view */
-function resetApp() { console.log("Resetting application UI and state..."); document.getElementById('signupFormElem')?.reset(); document.getElementById('loginFormElem')?.reset(); clearAllErrors(); resetToAuthState();}
+function displayError(id, msg) { const el=document.getElementById(id); if(el){el.innerText=msg||'';el.classList.add('error-message');} }
+function clearAllErrors() { ['signUpEmailError','signUpPasswordError','signUpLocationError','signUpPhoneError','signUpRoleError','loginError','loginEmailError','loginPasswordError','otpError'].forEach(id=>displayError(id,'')); ['otpStatus','feedbackStatus','userPreferencesStatus','authMessage'].forEach(id=>displayStatus(id,'',null)); }
+
+/** Reset forms, clear errors/state, show login, ensure chat listener is off */
+function resetApp() {
+    console.log("Resetting application UI and state...");
+    detachChatListener(); // *** Crucial: Ensure listener is detached ***
+    document.getElementById('signupFormElem')?.reset();
+    document.getElementById('loginFormElem')?.reset();
+    clearAllErrors();
+    resetToAuthState(); // Resets UI to show login page
+}
 
 // *** END of script.js ***
