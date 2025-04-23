@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Click n' Go! - Transportation & Delivery</title>
+    <title>Click n' Go! - Modern Transportation & Delivery</title>
     <!-- Link Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Link the CSS file -->
+    <!-- Link the Refreshed CSS file -->
     <link rel="stylesheet" href="style.css">
     <!-- Favicon links (optional) -->
     <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
@@ -18,36 +18,36 @@
 
     <!-- Authentication Section -->
     <main id="authSection" class="auth-container" style="display: block;">
-        <img src="logo-placeholder.png" alt="Click n' Go Logo" class="app-logo"> <!-- Optional Logo -->
+        <img src="logo-placeholder.png" alt="Click n' Go Logo" class="app-logo"> <!-- # NOTE: Use your actual logo -->
         <h1>Welcome to Click n' Go!</h1>
         <p class="subtitle">Your Reliable Ride & Delivery Partner</p>
 
         <!-- Sign Up Form -->
         <div id="signUpForm" style="display: none;">
-            <h2>Create Account</h2>
+            <h2>Create Account <span class="insecure-flag"> (Local - INSECURE DEMO)</span></h2>
             <form id="signupFormElem" novalidate>
                 <div class="form-group">
                     <label for="signUpEmail">Email</label>
                     <input type="email" id="signUpEmail" required autocomplete="email" placeholder="you@example.com">
-                    <span class="clear-input" onclick="clearInput('signUpEmail')">×</span>
+                    <span class="clear-input" data-clear-target="signUpEmail">×</span>
                     <div class="error-message" id="signUpEmailError"></div>
                 </div>
                 <div class="form-group">
                     <label for="signUpPassword">Password</label>
                     <input type="password" id="signUpPassword" required minlength="6" autocomplete="new-password" placeholder="Min. 6 characters">
-                    <span class="clear-input" onclick="clearInput('signUpPassword')">×</span>
+                    <span class="clear-input" data-clear-target="signUpPassword">×</span>
                     <div class="error-message" id="signUpPasswordError"></div>
                 </div>
                  <div class="form-group">
                      <label for="signUpLocation">Primary Location</label>
                      <input type="text" id="signUpLocation" placeholder="e.g., City, Barangay" required>
-                     <span class="clear-input" onclick="clearInput('signUpLocation')">×</span>
+                     <span class="clear-input" data-clear-target="signUpLocation">×</span>
                       <div class="error-message" id="signUpLocationError"></div>
                  </div>
                  <div class="form-group">
                     <label for="signUpPhone">Phone Number</label>
                     <input type="tel" id="signUpPhone" placeholder="e.g., 09123456789" required autocomplete="tel">
-                    <span class="clear-input" onclick="clearInput('signUpPhone')">×</span>
+                    <span class="clear-input" data-clear-target="signUpPhone">×</span>
                     <div class="error-message" id="signUpPhoneError"></div>
                  </div>
                  <div class="form-group">
@@ -60,9 +60,10 @@
                      </select>
                      <div class="error-message" id="signUpRoleError"></div>
                  </div>
-                <button type="submit">Sign Up</button>
+                <button type="submit" class="button-warning">Sign Up (Insecure Demo)</button>
             </form>
-            <p class="form-toggle-link">Already have an account? <a href="#" onclick="event.preventDefault(); showLoginForm();">Log In</a></p>
+            <p class="form-toggle-link">Already have an account? <a href="#" id="switchToLoginLink">Log In</a></p>
+            <p class="warning-note"><strong>Warning:</strong> Local signup stores data insecurely in your browser. Use Google Sign-In for better security.</p>
         </div>
 
         <!-- Login Form -->
@@ -72,50 +73,52 @@
                  <div class="form-group">
                      <label for="loginEmail">Email</label>
                      <input type="email" id="loginEmail" required autocomplete="email" placeholder="you@example.com">
-                     <span class="clear-input" onclick="clearInput('loginEmail')">×</span>
+                     <span class="clear-input" data-clear-target="loginEmail">×</span>
                      <div class="error-message" id="loginEmailError"></div>
                  </div>
                  <div class="form-group">
                      <label for="loginPassword">Password</label>
                      <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Enter password">
-                     <span class="clear-input" onclick="clearInput('loginPassword')">×</span>
+                     <span class="clear-input" data-clear-target="loginPassword">×</span>
                      <div class="error-message" id="loginPasswordError"></div>
                  </div>
-                <div class="error-message" id="loginError"></div> <!-- General login error -->
-                <button type="submit">Login</button>
+                <div class="error-message" id="loginError" aria-live="assertive"></div> <!-- General login error -->
+                <button type="submit">Login (Insecure Demo)</button>
             </form>
-            <p class="form-toggle-link">Don't have an account? <a href="#" onclick="event.preventDefault(); showSignUpForm();">Sign Up</a></p>
+            <p class="form-toggle-link">Don't have an account? <a href="#" id="switchToSignUpLink">Sign Up</a></p>
+             <p class="warning-note">Use local login ONLY for demo accounts created via the insecure local signup.</p>
         </div>
 
         <div class="social-login-divider">
-            <span>OR</span>
+            <span>OR USE SECURE SIGN-IN</span>
         </div>
 
         <!-- Google Sign-In Button -->
-        <button id="googleSignInButton" onclick="signInWithGoogleFirebase()">
+        <button id="googleSignInButton" type="button">
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18"><path d="M16.51 8.1H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.6 7.6 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z" fill="#4285F4"></path><path d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z" fill="#34A853"></path><path d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z" fill="#FBBC05"></path><path d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z" fill="#EA4335"></path></svg>
-            Sign in with Google
+            Sign in securely with Google
         </button>
          <p class="auth-note">(Secure sign-in provided by Google)</p>
 
         <!-- General Authentication Status Message Area -->
-        <div id="authMessage" class="status-message"></div>
+        <div id="authMessage" class="status-message" aria-live="polite"></div>
     </main>
 
-    <!-- OTP Verification Page -->
+    <!-- OTP Verification Page (Insecure Demo) -->
     <div id="otpPage" style="display: none;" class="centered-page otp-container">
-        <h2>Verify Your Account</h2>
-        <p id="otpMessage" class="subtitle">Enter the 6-digit code sent to your email.</p>
-        <form> <!-- Wrap OTP input in form for structure if needed -->
+        <h2>Verify Your Account (Insecure Demo)</h2>
+        <p id="otpMessage" class="subtitle">Enter the 6-digit code sent to your email (check console for demo).</p>
+        <form id="otpForm">
             <div class="form-group">
                 <label for="otpInput">OTP Code</label>
                 <input type="text" id="otpInput" placeholder="XXXXXX" pattern="\d{6}" maxlength="6" inputmode="numeric" required>
-                <span class="clear-input" onclick="clearInput('otpInput')">×</span>
-                <div class="error-message" id="otpError"></div>
+                <span class="clear-input" data-clear-target="otpInput">×</span>
+                <div class="error-message" id="otpError" aria-live="assertive"></div>
             </div>
-            <button type="button" onclick="verifyOTP()">Verify OTP</button> <!-- Use type="button" -->
+            <button type="button" id="verifyOtpButton">Verify OTP</button> <!-- Use type="button" -->
         </form>
-        <div id="otpStatus" class="status-message"></div> <!-- Removed loading class initially -->
+        <div id="otpStatus" class="status-message" aria-live="polite"></div> <!-- Removed loading class initially -->
+         <p class="warning-note"><strong>Warning:</strong> This OTP verification is part of the insecure local signup process.</p>
     </div>
 
     <!-- Main Application Section -->
@@ -123,56 +126,63 @@
 
         <header class="app-header">
              <div class="header-content">
-                <h1>Click n' Go!</h1>
-                <div id="clockDisplay" aria-live="polite">--:--:--</div>
+                <div class="header-left">
+                    <h1>Click n' Go!</h1>
+                    <p id="welcomeMessage">Welcome!</p>
+                </div>
+                <div class="header-right">
+                    <div id="clockContainer" class="clock-widget">
+                        <span id="clockDate" aria-live="off"></span>
+                        <span id="clockTime" aria-live="polite">--:--:--</span>
+                    </div>
+                </div>
              </div>
-             <p id="welcomeMessage">Welcome!</p>
         </header>
 
         <!-- Main content area -->
         <main id="appContent">
 
             <!-- Home Section -->
-            <section id="homeSection" class="content-section active-section"> <!-- Assume starts active -->
+            <section id="homeSection" class="content-section"> <!-- JS will manage active class -->
                 <h2>Hello, <span id="userEmailDisplay">User</span>!</h2>
-                <p>Your reliable ride and delivery partner.</p>
+                <p>Your reliable ride and delivery partner is ready.</p>
                 <div class="quick-actions card">
-                     <button onclick="switchSection('orderItemsSection')">
-                         <span class="icon">📦</span> Book/Track
+                     <button data-section="orderItemsSection">
+                         <span class="icon">📦</span> Book / Track
                      </button>
-                     <button onclick="switchSection('contactSection')">
-                         <span class="icon">📞</span> Contact Support
+                     <button data-section="contactSection">
+                         <span class="icon">📞</span> Contact Us
                      </button>
-                     <button onclick="showOrderHistory()">
+                     <button id="showHistoryButton">
                         <span class="icon">📜</span> Order History
                     </button>
                 </div>
                 <!-- Small map preview -->
                 <div id="homeMapPreview" class="map-container-small card">
-                     <p><strong>Location:</strong> <span id="userLocationDisplayHome">Checking...</span></p>
-                     <div id="mapPlaceholderSmall">(Map Area)</div>
+                     <p><strong>Your Location:</strong> <span id="userLocationDisplayHome">Checking...</span></p>
+                     <div id="mapPlaceholderSmall" aria-label="Map Preview Area">(Map Placeholder)</div>
                 </div>
             </section>
 
             <!-- Order Items / Service Section -->
-            <section id="orderItemsSection" class="content-section" style="display: none;">
-                 <h2>Ride & Delivery</h2>
+            <section id="orderItemsSection" class="content-section">
+                 <h2>Ride & Delivery Services</h2>
 
                  <!-- Customer Panel -->
                  <div id="orderPanel" style="display: none;" class="service-panel card">
                      <h3>Place & Track Orders</h3>
                      <div class="facebook-link">
-                         <p>Need a service? Book via Facebook!</p>
+                         <p>Need a service? Currently, please book via Facebook!</p>
                          <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank" rel="noopener noreferrer" class="button-link facebook">
-                             Book on Facebook Now
+                             <span class="icon">👍</span> Book on Facebook Now
                          </a>
                          <p class="note"><small>(In-app booking coming soon!)</small></p>
                       </div>
                       <hr>
                       <h4>Demo: Live Order Tracking</h4>
-                      <button onclick="simulateOrder()" class="button-secondary inline">Place Simulated Order</button>
-                      <div id="trackingPanel" class="tracking-area" aria-live="polite">
-                          <p>Place an order to see tracking.</p>
+                      <button id="simulateOrderButton" class="button-secondary inline">Place Simulated Order</button>
+                      <div id="trackingPanel" class="tracking-area card" aria-live="polite">
+                          <p class="placeholder-text">Place a simulated order to see tracking details here.</p>
                       </div>
                   </div>
 
@@ -181,82 +191,87 @@
                       <h3>Incoming Requests</h3>
                       <div id="driverRequestsList">
                          <p class="placeholder-text">(No current requests)</p>
+                         <!-- # NOTE: List of requests will be loaded here -->
                       </div>
                   </div>
 
                  <!-- Location & Map (Common) -->
                  <div id="locationSection" class="card">
-                    <h4>Your Location</h4>
-                    <p><span id="userLocationDisplay">Not Set</span></p>
-                    <div id="mapPlaceholder" class="map-container">(Map Area - Integration needed)</div>
+                    <h4>Your Primary Location</h4>
+                    <p><span id="userLocationDisplay" class="highlight-text">Not Set</span></p>
+                    <div id="mapPlaceholder" class="map-container" aria-label="Map Area">(Map Area - Integration Needed)</div>
+                    <p class="note"><small>Map functionality requires integration with a service like Google Maps API or Leaflet.</small></p>
                 </div>
 
                 <!-- Chat Interface (Common) -->
                 <div id="chatSection" class="card chat-card">
-                     <h3>Chat</h3>
-                     <div id="chatMessages" class="chat-messages-area">
-                         <p class="loading-message loading">Loading chat...</p>
+                     <h3>Live Chat</h3>
+                     <div id="chatMessages" class="chat-messages-area" aria-live="polite">
+                         <div class="loading-message loading">Loading chat...</div>
                      </div>
-                     <div class="chat-input-area">
-                         <input type="text" id="chatInput" placeholder="Type your message...">
-                         <button id="chatSendButton" aria-label="Send Message">
-                             <span class="icon">➤</span> <!-- Send Icon -->
+                     <form id="chatForm" class="chat-input-area" novalidate>
+                         <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
+                         <button type="submit" id="chatSendButton" aria-label="Send Message">
+                             <span class="icon send-icon" aria-hidden="true">➤</span>
                          </button>
-                     </div>
+                     </form>
                  </div>
             </section>
 
             <!-- Order History Section -->
-            <section id="orderHistorySection" class="content-section" style="display: none;">
+            <section id="orderHistorySection" class="content-section">
                 <h2>Order History</h2>
                 <div id="orderList" class="card-list">
                     <div class="loading-message loading">Loading history...</div>
+                    <!-- # NOTE: Order items will be populated here -->
                 </div>
             </section>
 
             <!-- Account Info Section -->
-            <section id="accountSection" class="content-section" style="display: none;">
+            <section id="accountSection" class="content-section">
                 <h2>My Account</h2>
                 <div class="account-details card">
-                    <p><strong>Email:</strong> <span id="accountEmail">...</span></p>
-                    <p><strong>Name:</strong> <span id="accountName">...</span></p>
-                    <p><strong>Location:</strong> <span id="accountLocation">...</span></p>
+                    <p><strong>Email:</strong> <span id="accountEmail" class="highlight-text">...</span></p>
+                    <p><strong>Display Name:</strong> <span id="accountName">...</span></p>
+                    <p><strong>Primary Location:</strong> <span id="accountLocation">...</span></p>
                     <p><strong>Phone:</strong> <span id="accountPhone">...</span></p>
-                    <p><strong>Role:</strong> <span id="userRole">...</span></p>
+                    <p><strong>Role:</strong> <span id="userRole" class="highlight-text">...</span></p>
                     <p class="note"><strong>User ID:</strong> <span id="accountUid">...</span></p>
                 </div>
 
-                <!-- Admin Panel -->
+                <!-- Admin Panel (Only shown if role is admin) -->
                 <div id="adminSection" style="display: none;" class="admin-panel card">
-                    <h3>Admin: Registered Users (Local List)</h3>
-                    <div id="allUsers" class="user-list">
+                    <h3>Admin: Registered Users (<span class="insecure-flag">Local List Demo</span>)</h3>
+                     <p class="warning-note">Shows only users registered via the INSECURE local signup demo.</p>
+                    <div id="allUsers" class="user-list styled-scrollbar">
                         <div class="loading-message loading">Loading users...</div>
                     </div>
                 </div>
 
-                 <button onclick="logoutFirebase()" class="button-danger full-width" style="margin-top: 20px;">Logout</button>
+                 <button id="logoutButton" class="button-danger full-width" style="margin-top: 20px;">Logout</button>
             </section>
 
             <!-- Settings Section -->
-            <section id="settingsSection" class="content-section" style="display: none;">
+            <section id="settingsSection" class="content-section">
                 <h2>Settings</h2>
                 <div class="settings-options card">
-                     <div class="form-group setting-item">
+                     <div class="setting-item">
                          <label for="darkModeToggle">Dark Mode</label>
-                         <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" class="toggle-switch">
+                         <input type="checkbox" id="darkModeToggle" role="switch" class="toggle-switch">
                      </div>
                      <hr>
-                     <button class="setting-item" onclick="switchSection('userPreferencesSection')">
-                         Language & Preferences <span class="arrow">›</span>
+                     <button class="setting-item" data-section="userPreferencesSection">
+                         Language & Preferences <span class="arrow" aria-hidden="true">›</span>
                     </button>
                      <hr>
-                     <button onclick="deleteAccount()" class="button-danger setting-item delete-account">Delete My Account</button>
+                     <button id="deleteAccountButton" class="button-danger setting-item delete-account">Delete My Account</button>
+                     <p class="warning-note" style="padding: 0 15px 10px 15px;">Deleting your account is irreversible.</p>
                 </div>
             </section>
 
              <!-- User Preferences Sub-Section -->
-            <section id="userPreferencesSection" class="content-section" style="display: none;">
-                 <button onclick="switchSection('settingsSection')" class="back-button">← Settings</button>
+            <section id="userPreferencesSection" class="content-section">
+                 <button data-section="settingsSection" class="back-button">← Back to Settings</button>
                  <h2>User Preferences</h2>
                  <div class="card">
                      <div class="form-group">
@@ -264,30 +279,33 @@
                          <select id="languageSelect">
                              <option value="en">English</option>
                              <option value="tl">Tagalog</option>
-                             <option value="es" disabled>Spanish (Soon)</option>
+                             <option value="es" disabled>Spanish (Coming Soon)</option>
                          </select>
                      </div>
-                     <button onclick="savePreferences()">Save Preferences</button>
-                     <div id="userPreferencesStatus" class="status-message"></div>
+                     <!-- # NOTE: Add more preference options here -->
+                     <button id="savePreferencesButton">Save Preferences</button>
+                     <div id="userPreferencesStatus" class="status-message" aria-live="polite"></div>
                  </div>
              </section>
 
             <!-- Contact Us Section -->
-            <section id="contactSection" class="content-section" style="display: none;">
+            <section id="contactSection" class="content-section">
                  <h2>Contact Us</h2>
-                 <p>Need help? Reach out!</p>
+                 <p>Need help or have questions? Reach out to us!</p>
                  <div class="contact-info card">
-                     <p><span class="icon">✉️</span> <strong>Email:</strong> <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
-                     <p><span class="icon">📞</span> <strong>Phone:</strong> <a href="tel:09165540988">0916 554 0988</a></p>
-                     <p><span class="icon">🌐</span> <strong>Facebook:</strong> <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank" rel="noopener noreferrer">Click n' Go Page</a></p>
+                     <p><span class="icon contact-icon" aria-hidden="true">✉️</span> <strong>Email:</strong> <a href="mailto:clickngoservice@gmail.com">clickngoservice@gmail.com</a></p>
+                     <p><span class="icon contact-icon" aria-hidden="true">📞</span> <strong>Phone:</strong> <a href="tel:09165540988">0916 554 0988</a></p>
+                     <p><span class="icon contact-icon" aria-hidden="true">🌐</span> <strong>Facebook:</strong> <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank" rel="noopener noreferrer">Click n' Go Facebook Page</a></p>
                  </div>
+                 <p class="note">Support available during business hours. Check Facebook for updates.</p>
             </section>
 
             <!-- About / Developer Info Section -->
-            <section id="developerSection" class="content-section" style="display: none;">
+            <section id="developerSection" class="content-section">
                 <h2>About Click n' Go!</h2>
                 <div class="card">
-                    <p>Your reliable 12-hour motor-taxi and delivery service. We prioritize safety, affordability, and speed.</p>
+                    <p>Your dedicated 12-hour motor-taxi and on-demand delivery service based in Isok 1, Boac, Marinduque. We are committed to providing safe, affordable, fast, and reliable transportation solutions connecting you with local couriers in real-time.</p>
+                    <p>Click n' Go operates as a team-focused corporation.</p>
                 </div>
                 <div id="faqSection" class="card">
                     <h3>Frequently Asked Questions</h3>
@@ -297,17 +315,20 @@
                 </div>
                 <div id="feedbackSection" class="card">
                     <h3>Send Us Feedback</h3>
+                    <p>We value your input! Let us know how we can improve.</p>
                     <form id="feedbackForm" novalidate>
                         <div class="form-group">
                             <label for="feedbackMessage">Your Message</label>
-                            <textarea id="feedbackMessage" placeholder="How can we improve?" required rows="4"></textarea>
+                            <textarea id="feedbackMessage" placeholder="Enter your suggestions or report issues here..." required rows="4"></textarea>
+                             <div class="error-message" id="feedbackMessageError"></div>
                         </div>
                         <button type="submit">Submit Feedback</button>
                     </form>
-                    <div id="feedbackStatus" class="status-message"></div>
+                    <div id="feedbackStatus" class="status-message" aria-live="polite"></div>
                 </div>
                  <div class="developer-info">
-                    <p>Developed by:<br> Jason M. Pascual & Ysabelle Homer G. Montellano</p>
+                    <p>App Concept & Development by:<br> Jason M. Pascual & Ysabelle Homer G. Montellano</p>
+                    <p><small>UI/JS Enhancements (Demo) - Based on original structure.</small></p>
                  </div>
             </section>
 
@@ -315,24 +336,22 @@
 
         <!-- Bottom Navigation Bar -->
         <nav id="bottomNav">
-             <button onclick="switchSection('homeSection')" aria-label="Home" class="active">
-                <span class="nav-icon">🏠</span><span class="nav-text">Home</span>
+             <button data-section="homeSection" aria-label="Home" class="active">
+                <span class="nav-icon" aria-hidden="true">🏠</span><span class="nav-text">Home</span>
              </button>
-             <button onclick="switchSection('orderItemsSection')" aria-label="Orders">
-                <span class="nav-icon">📦</span><span class="nav-text">Orders</span>
+             <button data-section="orderItemsSection" aria-label="Orders">
+                <span class="nav-icon" aria-hidden="true">📦</span><span class="nav-text">Services</span>
              </button>
-             <button onclick="switchSection('accountSection')" aria-label="Account">
-                <span class="nav-icon">👤</span><span class="nav-text">Account</span>
+             <button data-section="accountSection" aria-label="Account">
+                <span class="nav-icon" aria-hidden="true">👤</span><span class="nav-text">Account</span>
              </button>
-             <button onclick="switchSection('settingsSection')" aria-label="Settings">
-                <span class="nav-icon">⚙️</span><span class="nav-text">Settings</span>
+             <button data-section="settingsSection" aria-label="Settings">
+                <span class="nav-icon" aria-hidden="true">⚙️</span><span class="nav-text">Settings</span>
              </button>
-             <button onclick="switchSection('contactSection')" aria-label="Contact">
-                 <span class="nav-icon">📞</span><span class="nav-text">Contact</span>
-             </button>
-             <button onclick="switchSection('developerSection')" aria-label="About">
-                 <span class="nav-icon">ℹ️</span><span class="nav-text">About</span>
+             <button data-section="developerSection" aria-label="About">
+                 <span class="nav-icon" aria-hidden="true">ℹ️</span><span class="nav-text">About</span>
             </button>
+             <!-- # NOTE: Removed direct contact button, merged into About or reachable from Home -->
         </nav>
 
     </div> <!-- End App Section -->
