@@ -40,8 +40,7 @@ Instead, please use one of the following private methods:
     **[Report a vulnerability via GitHub](https://github.com/psj-hue/Click-N-Go/security/advisories/new)**
     This is the most secure and direct way to notify us.
 
-2.  **(Alternative) Email:** Send an email to our private security address: `security@click-n-go.example.com`
-    *   **Note for psj-hue:** You MUST create and monitor this email address if you want to offer this option. Replace the placeholder address if you use a different one, or remove this option if you only want to use GitHub reporting.
+2.  **(Alternative) Email:** Send an email to our private security address: `clickngoservice@gmail.com`
 
 **What to Include in Your Report:**
 
@@ -56,8 +55,8 @@ To help us investigate and resolve the issue quickly, please include as much of 
 
 **What to Expect After Reporting:**
 
-1.  **Acknowledgement:** We aim to acknowledge receipt of your report within **2 business days**. (Note for psj-hue: adjust if needed)
-2.  **Initial Triage:** We will investigate the report to validate the vulnerability. We aim to provide an initial assessment within **5 business days** of acknowledgment. (Note for psj-hue: adjust if needed)
+1.  **Acknowledgement:** We aim to acknowledge receipt of your report within **2 business days**. 
+2.  **Initial Triage:** We will investigate the report to validate the vulnerability. We aim to provide an initial assessment within **5 business days** of acknowledgment. 
 3.  **Updates:** We will strive to keep you informed of our progress via the reporting channel (GitHub Advisory or email). The timeline for a fix depends on the complexity and severity.
 4.  **Resolution & Disclosure:** Once a fix is developed and tested, we will coordinate the release and public disclosure (typically through a GitHub Security Advisory).
 5.  **Acknowledgements:** We value the contributions of security researchers. If you agree, we would like to publicly credit you for your discovery in the advisory or release notes. Please let us know your preference for acknowledgement (e.g., name, link, or anonymous).
