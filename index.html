@@ -18,13 +18,13 @@
 
     <!-- Authentication Section -->
     <main id="authSection" class="auth-container" style="display: block;">
-        <img src="logo-placeholder.png" alt="Click n' Go Logo" class="app-logo"> <!-- # NOTE: Use your actual logo -->
+        <img src="logo-placeholder.png" alt="Click n' Go Logo" class="app-logo"> <!-- NOTE: Use your actual logo -->
         <h1>Welcome to Click n' Go!</h1>
         <p class="subtitle">Your Reliable Ride & Delivery Partner</p>
 
         <!-- Sign Up Form -->
         <div id="signUpForm" style="display: none;">
-            <h2>Create Account <span class="insecure-flag"> (Local - INSECURE DEMO)</span></h2>
+            <h2>Create Account <span class="insecure-flag"> (Local - EXTREMELY INSECURE DEMO)</span></h2>
             <form id="signupFormElem" novalidate>
                 <div class="form-group">
                     <label for="signUpEmail">Email</label>
@@ -56,14 +56,14 @@
                          <option value="" disabled selected>-- Select Role --</option>
                          <option value="customer">Customer</option>
                          <option value="driver">Driver</option>
-                         <option value="admin">Admin</option>
+                         <option value="admin">Admin (Limited Demo)</option>
                      </select>
                      <div class="error-message" id="signUpRoleError"></div>
                  </div>
                 <button type="submit" class="button-warning">Sign Up (Insecure Demo)</button>
             </form>
             <p class="form-toggle-link">Already have an account? <a href="#" id="switchToLoginLink">Log In</a></p>
-            <p class="warning-note"><strong>Warning:</strong> Local signup stores data insecurely in your browser. Use Google Sign-In for better security.</p>
+            <p class="warning-note"><strong>CRITICAL WARNING:</strong> This local signup stores data <strong>extremely insecurely</strong> in your browser (including passwords). It is for demonstration purposes ONLY. <strong>DO NOT USE FOR REAL ACCOUNTS.</strong> Use Google Sign-In for better security.</p>
         </div>
 
         <!-- Login Form -->
@@ -83,10 +83,10 @@
                      <div class="error-message" id="loginPasswordError"></div>
                  </div>
                 <div class="error-message" id="loginError" aria-live="assertive"></div> <!-- General login error -->
-                <button type="submit">Login (Insecure Demo)</button>
+                <button type="submit">Login (Insecure Demo Account)</button>
             </form>
-            <p class="form-toggle-link">Don't have an account? <a href="#" id="switchToSignUpLink">Sign Up</a></p>
-             <p class="warning-note">Use local login ONLY for demo accounts created via the insecure local signup.</p>
+            <p class="form-toggle-link">Don't have an account? <a href="#" id="switchToSignUpLink">Sign Up (Insecure Demo)</a></p>
+             <p class="warning-note">Use local login <strong>ONLY</strong> for demo accounts created via the insecure local signup. Prefer Google Sign-In.</p>
         </div>
 
         <div class="social-login-divider">
@@ -98,7 +98,7 @@
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18"><path d="M16.51 8.1H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.6 7.6 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z" fill="#4285F4"></path><path d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z" fill="#34A853"></path><path d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z" fill="#FBBC05"></path><path d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z" fill="#EA4335"></path></svg>
             Sign in securely with Google
         </button>
-         <p class="auth-note">(Secure sign-in provided by Google)</p>
+         <p class="auth-note">(Secure sign-in and profile storage via Google & Firebase)</p>
 
         <!-- General Authentication Status Message Area -->
         <div id="authMessage" class="status-message" aria-live="polite"></div>
@@ -106,19 +106,19 @@
 
     <!-- OTP Verification Page (Insecure Demo) -->
     <div id="otpPage" style="display: none;" class="centered-page otp-container">
-        <h2>Verify Your Account (Insecure Demo)</h2>
-        <p id="otpMessage" class="subtitle">Enter the 6-digit code sent to your email (check console for demo).</p>
+        <h2>Verify Account (Insecure Demo)</h2>
+        <p id="otpMessage" class="subtitle">Enter the 6-digit code. For this demo, it's logged in your browser's console.</p>
         <form id="otpForm">
             <div class="form-group">
-                <label for="otpInput">OTP Code</label>
-                <input type="text" id="otpInput" placeholder="XXXXXX" pattern="\d{6}" maxlength="6" inputmode="numeric" required>
+                <label for="otpInput">OTP Code (Check Console)</label>
+                <input type="text" id="otpInput" placeholder="XXXXXX" pattern="\\d{6}" maxlength="6" inputmode="numeric" required>
                 <span class="clear-input" data-clear-target="otpInput">×</span>
                 <div class="error-message" id="otpError" aria-live="assertive"></div>
             </div>
-            <button type="button" id="verifyOtpButton">Verify OTP</button> <!-- Use type="button" -->
+            <button type="button" id="verifyOtpButton">Verify OTP (Insecure)</button>
         </form>
-        <div id="otpStatus" class="status-message" aria-live="polite"></div> <!-- Removed loading class initially -->
-         <p class="warning-note"><strong>Warning:</strong> This OTP verification is part of the insecure local signup process.</p>
+        <div id="otpStatus" class="status-message" aria-live="polite"></div>
+         <p class="warning-note"><strong>Warning:</strong> This OTP verification is part of the <strong>highly insecure</strong> local signup demo. It does NOT offer real security.</p>
     </div>
 
     <!-- Main Application Section -->
@@ -130,6 +130,9 @@
                     <h1>Click n' Go!</h1>
                     <p id="welcomeMessage">Welcome!</p>
                 </div>
+                 <div class="header-user">
+                     <img id="userAvatarSmall" src="avatar-placeholder.png" alt="User Avatar" class="avatar-small" style="display:none;">
+                 </div>
                 <div class="header-right">
                     <div id="clockContainer" class="clock-widget">
                         <span id="clockDate" aria-live="off"></span>
@@ -143,7 +146,7 @@
         <main id="appContent">
 
             <!-- Home Section -->
-            <section id="homeSection" class="content-section"> <!-- JS will manage active class -->
+            <section id="homeSection" class="content-section">
                 <h2>Hello, <span id="userEmailDisplay">User</span>!</h2>
                 <p>Your reliable ride and delivery partner is ready.</p>
                 <div class="quick-actions card">
@@ -160,7 +163,7 @@
                 <!-- Small map preview -->
                 <div id="homeMapPreview" class="map-container-small card">
                      <p><strong>Your Location:</strong> <span id="userLocationDisplayHome">Checking...</span></p>
-                     <div id="mapPlaceholderSmall" aria-label="Map Preview Area">(Map Placeholder)</div>
+                     <div id="mapPlaceholderSmall" aria-label="Map Preview Area">(Map Placeholder - Live Map Coming Soon!)</div>
                 </div>
             </section>
 
@@ -176,54 +179,56 @@
                          <a href="https://www.facebook.com/profile.php?id=61569076123582" target="_blank" rel="noopener noreferrer" class="button-link facebook">
                              <span class="icon">👍</span> Book on Facebook Now
                          </a>
-                         <p class="note"><small>(In-app booking coming soon!)</small></p>
+                         <p class="note"><small>(In-app booking & Firebase-powered order system coming soon!)</small></p>
                       </div>
                       <hr>
-                      <h4>Demo: Live Order Tracking</h4>
+                      <h4>Realtime Order Tracking (Firebase Demo)</h4>
+                      <p class="note"><small>Place a simulated order. Data will be stored in Firebase RTDB.</small></p>
                       <button id="simulateOrderButton" class="button-secondary inline">Place Simulated Order</button>
                       <div id="trackingPanel" class="tracking-area card" aria-live="polite">
-                          <p class="placeholder-text">Place a simulated order to see tracking details here.</p>
+                          <p class="placeholder-text">Place a simulated order to see live tracking details here.</p>
                       </div>
                   </div>
 
                  <!-- Driver Panel -->
                  <div id="orderRequestPanel" style="display: none;" class="service-panel card">
-                      <h3>Incoming Requests</h3>
+                      <h3>Incoming Requests (Driver View)</h3>
                       <div id="driverRequestsList">
-                         <p class="placeholder-text">(No current requests)</p>
-                         <!-- # NOTE: List of requests will be loaded here -->
+                         <p class="placeholder-text">(No current requests. Feature under development.)</p>
+                         <!-- List of requests will be loaded here from Firebase for drivers -->
                       </div>
                   </div>
 
                  <!-- Location & Map (Common) -->
                  <div id="locationSection" class="card">
-                    <h4>Your Primary Location</h4>
+                    <h4>Your Primary Location (from Profile)</h4>
                     <p><span id="userLocationDisplay" class="highlight-text">Not Set</span></p>
-                    <div id="mapPlaceholder" class="map-container" aria-label="Map Area">(Map Area - Integration Needed)</div>
-                    <p class="note"><small>Map functionality requires integration with a service like Google Maps API or Leaflet.</small></p>
+                    <div id="mapPlaceholder" class="map-container" aria-label="Map Area">(Map Area - Live Map Integration Needed)</div>
+                    <p class="note"><small>Map functionality requires integration with a service like Google Maps API or Leaflet. User location from profile.</small></p>
                 </div>
 
                 <!-- Chat Interface (Common) -->
                 <div id="chatSection" class="card chat-card">
-                     <h3>Live Chat</h3>
-                     <div id="chatMessages" class="chat-messages-area" aria-live="polite">
-                         <div class="loading-message loading">Loading chat...</div>
+                     <h3>Live Chat (Powered by Firebase)</h3>
+                     <div id="chatMessages" class="chat-messages-area styled-scrollbar" aria-live="polite">
+                         <div class="loading-message loading">Loading chat messages...</div>
                      </div>
                      <form id="chatForm" class="chat-input-area" novalidate>
-                         <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off">
-                         <button type="submit" id="chatSendButton" aria-label="Send Message">
+                         <input type="text" id="chatInput" placeholder="Type your message..." autocomplete="off" disabled>
+                         <button type="submit" id="chatSendButton" aria-label="Send Message" disabled>
                              <span class="icon send-icon" aria-hidden="true">➤</span>
                          </button>
                      </form>
+                     <div id="chatStatus" class="status-message" aria-live="polite"></div>
                  </div>
             </section>
 
             <!-- Order History Section -->
             <section id="orderHistorySection" class="content-section">
-                <h2>Order History</h2>
+                <h2>Order History (from Firebase)</h2>
                 <div id="orderList" class="card-list">
-                    <div class="loading-message loading">Loading history...</div>
-                    <!-- # NOTE: Order items will be populated here -->
+                    <div class="loading-message loading">Loading your order history...</div>
+                    <!-- Order items will be populated here from Firebase -->
                 </div>
             </section>
 
@@ -231,20 +236,24 @@
             <section id="accountSection" class="content-section">
                 <h2>My Account</h2>
                 <div class="account-details card">
+                    <div class="account-avatar-section">
+                        <img id="accountAvatar" src="avatar-placeholder.png" alt="User Avatar" class="avatar-large">
+                    </div>
                     <p><strong>Email:</strong> <span id="accountEmail" class="highlight-text">...</span></p>
                     <p><strong>Display Name:</strong> <span id="accountName">...</span></p>
                     <p><strong>Primary Location:</strong> <span id="accountLocation">...</span></p>
                     <p><strong>Phone:</strong> <span id="accountPhone">...</span></p>
                     <p><strong>Role:</strong> <span id="userRole" class="highlight-text">...</span></p>
-                    <p class="note"><strong>User ID:</strong> <span id="accountUid">...</span></p>
+                    <p class="note"><strong>User ID (UID):</strong> <span id="accountUid">...</span></p>
+                    <p class="note"><strong>Account Type:</strong> <span id="accountType">...</span></p>
                 </div>
 
                 <!-- Admin Panel (Only shown if role is admin) -->
                 <div id="adminSection" style="display: none;" class="admin-panel card">
-                    <h3>Admin: Registered Users (<span class="insecure-flag">Local List Demo</span>)</h3>
-                     <p class="warning-note">Shows only users registered via the INSECURE local signup demo.</p>
+                    <h3>Admin: Registered Users (<span class="insecure-flag">Local List Demo ONLY</span>)</h3>
+                     <p class="warning-note">Shows only users registered via the <strong>INSECURE</strong> local signup demo. This list is <strong>NOT</strong> from the secure Firebase database.</p>
                     <div id="allUsers" class="user-list styled-scrollbar">
-                        <div class="loading-message loading">Loading users...</div>
+                        <div class="loading-message loading">Loading local demo users...</div>
                     </div>
                 </div>
 
@@ -265,14 +274,14 @@
                     </button>
                      <hr>
                      <button id="deleteAccountButton" class="button-danger setting-item delete-account">Delete My Account</button>
-                     <p class="warning-note" style="padding: 0 15px 10px 15px;">Deleting your account is irreversible.</p>
+                     <p class="warning-note" style="padding: 0 15px 10px 15px;">Deleting your account is irreversible. For Firebase accounts, data will be removed from our database. Local demo accounts are removed from this browser.</p>
                 </div>
             </section>
 
              <!-- User Preferences Sub-Section -->
             <section id="userPreferencesSection" class="content-section">
                  <button data-section="settingsSection" class="back-button">← Back to Settings</button>
-                 <h2>User Preferences</h2>
+                 <h2>User Preferences (Synced with Firebase)</h2>
                  <div class="card">
                      <div class="form-group">
                          <label for="languageSelect">Interface Language:</label>
@@ -282,7 +291,7 @@
                              <option value="es" disabled>Spanish (Coming Soon)</option>
                          </select>
                      </div>
-                     <!-- # NOTE: Add more preference options here -->
+                     <!-- More preference options here -->
                      <button id="savePreferencesButton">Save Preferences</button>
                      <div id="userPreferencesStatus" class="status-message" aria-live="polite"></div>
                  </div>
@@ -311,15 +320,16 @@
                     <h3>Frequently Asked Questions</h3>
                     <div id="faqList">
                         <div class="loading-message loading">Loading FAQs...</div>
+                        <!-- FAQs will be loaded by JS -->
                     </div>
                 </div>
                 <div id="feedbackSection" class="card">
-                    <h3>Send Us Feedback</h3>
+                    <h3>Send Us Feedback (Submitted to Firebase)</h3>
                     <p>We value your input! Let us know how we can improve.</p>
                     <form id="feedbackForm" novalidate>
                         <div class="form-group">
                             <label for="feedbackMessage">Your Message</label>
-                            <textarea id="feedbackMessage" placeholder="Enter your suggestions or report issues here..." required rows="4"></textarea>
+                            <textarea id="feedbackMessage" placeholder="Enter your suggestions or report issues here..." required rows="4" minlength="10"></textarea>
                              <div class="error-message" id="feedbackMessageError"></div>
                         </div>
                         <button type="submit">Submit Feedback</button>
@@ -327,8 +337,9 @@
                     <div id="feedbackStatus" class="status-message" aria-live="polite"></div>
                 </div>
                  <div class="developer-info">
-                    <p>App Concept & Development by:<br> Jason M. Pascual & Ysabelle Homer G. Montellano</p>
-                    <p><small>UI/JS Enhancements (Demo) - Based on original structure.</small></p>
+                    <p>App Concept & Original Development by: JP Team</p>
+                    <p>Current Version: Enhanced UI/UX, Advanced JS & Firebase Features by: JP</p>
+                    <p><small>Building upon the original application structure.</small></p>
                  </div>
             </section>
 
@@ -339,7 +350,7 @@
              <button data-section="homeSection" aria-label="Home" class="active">
                 <span class="nav-icon" aria-hidden="true">🏠</span><span class="nav-text">Home</span>
              </button>
-             <button data-section="orderItemsSection" aria-label="Orders">
+             <button data-section="orderItemsSection" aria-label="Services">
                 <span class="nav-icon" aria-hidden="true">📦</span><span class="nav-text">Services</span>
              </button>
              <button data-section="accountSection" aria-label="Account">
@@ -351,7 +362,6 @@
              <button data-section="developerSection" aria-label="About">
                  <span class="nav-icon" aria-hidden="true">ℹ️</span><span class="nav-text">About</span>
             </button>
-             <!-- # NOTE: Removed direct contact button, merged into About or reachable from Home -->
         </nav>
 
     </div> <!-- End App Section -->
